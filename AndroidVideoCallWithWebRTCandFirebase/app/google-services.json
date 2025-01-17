@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "678107903610",
+    "project_id": "android-video-call-with-webrtc",
+    "storage_bucket": "android-video-call-with-webrtc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:678107903610:android:fe1bb4f84cdcfeba0c6dc3",
+        "android_client_info": {
+          "package_name": "com.example.androidvideocallwithwebrtcandfirebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYmg7SOhp69Jhbb79deR85PDj1UOgiNNI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

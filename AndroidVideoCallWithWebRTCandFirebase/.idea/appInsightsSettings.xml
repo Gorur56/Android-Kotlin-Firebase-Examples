@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.androidvideocallwithwebrtcandfirebase" />
+                  <option name="mobileSdkAppId" value="1:678107903610:android:fe1bb4f84cdcfeba0c6dc3" />
+                  <option name="projectId" value="android-video-call-with-webrtc" />
+                  <option name="projectNumber" value="678107903610" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
