@@ -1,5 +1,6 @@
 package com.example.androidvideocallwithwebrtcandfirebase.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -42,7 +43,9 @@ class LoginActivity : AppCompatActivity() {
                         Snackbar.make(binding.root, reason?: "Unknown error ", Snackbar.LENGTH_SHORT).show()
                     } else {
                         //start moving to mainActivity
-
+                        startActivity(Intent(this@LoginActivity, MainActivity::class.java).apply {
+                            putExtra("username", binding.edittextUsername.text.toString())
+                        })
                     }
                 }
             }
