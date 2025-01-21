@@ -3,14 +3,15 @@ package com.example.androidvideocallwithwebrtcandfirebase.firebaseClient
 import android.util.Log
 import com.example.androidvideocallwithwebrtcandfirebase.utils.FirebaseFieldNames.PASSWORD
 import com.example.androidvideocallwithwebrtcandfirebase.utils.FirebaseFieldNames.STATUS
+import com.example.androidvideocallwithwebrtcandfirebase.utils.MyEventListener
 import com.example.androidvideocallwithwebrtcandfirebase.utils.UserStatus
 import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.ValueEventListener
 import com.google.gson.Gson
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class FirebaseClient @Inject constructor(
     private val dbRef: DatabaseReference,
     private val gson: Gson
@@ -22,47 +23,63 @@ class FirebaseClient @Inject constructor(
         this.currentUserName = userName
     }
 
-    fun login(userName: String, password: String, done: (Boolean, String?) -> Unit) {
-        dbRef.addListenerForSingleValueEvent(object : ValueEventListener{
+    fun login(username: String, password: String, done: (Boolean, String?) -> Unit) {
+        dbRef.addListenerForSingleValueEvent(object  : MyEventListener(){
             override fun onDataChange(snapshot: DataSnapshot) {
                 //if the current user exists
-                if(snapshot.hasChild(userName)) {
-                    //user existsi its tşme to check the password
-                    val dbPassword = snapshot.child(userName).child(PASSWORD).value
-                    if ( password == dbPassword) {
+                if (snapshot.hasChild(username)){
+                    //user exists , its time to check the password
+                    val dbPassword = snapshot.child(username).child(PASSWORD).value
+                    if (password == dbPassword) {
                         //password is correct and sign in
-                        dbRef.child(userName).child(STATUS).setValue(UserStatus.ONLINE)
+                        dbRef.child(username).child(STATUS).setValue(UserStatus.ONLINE)
                             .addOnCompleteListener {
-                                setUserName(userName)
+                                setUserName(username)
                                 done(true,null)
                             }.addOnFailureListener {
                                 done(false,"${it.message}")
                             }
-                    } else {
+                    }else{
                         //password is wrong, notify user
-                        done(false, "Password is wrong")
+                        done(false,"Password is wrong")
                     }
-                } else {
-                    //user does not exist, register the user
-                    dbRef.child(userName).child(PASSWORD).setValue(password).addOnCompleteListener {
-                        dbRef.child(userName).child(STATUS).setValue(UserStatus.ONLINE)
+
+                }else{
+                    //user doesnt exist, register the user
+                    dbRef.child(username).child(PASSWORD).setValue(password).addOnCompleteListener {
+                        dbRef.child(username).child(STATUS).setValue(UserStatus.ONLINE)
                             .addOnCompleteListener {
-                                setUserName(userName)
-                                done(true, null)
+                                setUserName(username)
+                                done(true,null)
                             }.addOnFailureListener {
-                                done(false, it.message)
+                                done(false,it.message)
                             }
                     }.addOnFailureListener {
-
+                        done(false,it.message)
                     }
+
                 }
             }
+        })
+    }
 
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("FirebaseClient", "Database operation was cancelled: ${error.message}")
+    fun observeUsersStatus(status: (List<Pair<String, String>>) -> Unit) {
+        dbRef.addValueEventListener(object : MyEventListener() {
+
+            override fun onDataChange(snapshot: DataSnapshot) {
+                snapshot.children.forEach{
+                    Log.d("observeUserStatus", "Key: ${it.key}, status: ${it.child(STATUS).value}, currentUserName: $currentUserName")
+                }
+
+                Log.d("observeUserStatus", "currentUserName: $currentUserName" )
+                val list = snapshot.children.filter { it.key == currentUserName }
+                    .map { it.key!! to it.child(STATUS).value.toString()
+                }
+
+                Log.d("observeUserStatus", "Filtered List: $list")
+                status(list)
 
             }
-
         })
     }
 }

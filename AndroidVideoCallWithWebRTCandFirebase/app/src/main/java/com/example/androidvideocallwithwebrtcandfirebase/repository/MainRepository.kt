@@ -10,4 +10,8 @@ class MainRepository @Inject constructor(
     fun login(userName: String, password: String, isDone: (Boolean, String?) -> Unit) {
         firebaseClient.login(userName, password, isDone)
     }
+
+    fun observeUserStatus(status: (List<Pair<String, String>>) -> Unit){
+        firebaseClient.observeUsersStatus(status)
+    }
 }
