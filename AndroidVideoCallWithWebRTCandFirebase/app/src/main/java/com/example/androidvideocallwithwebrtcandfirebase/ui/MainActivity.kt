@@ -6,19 +6,22 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.androidvideocallwithwebrtcandfirebase.R
+import com.example.androidvideocallwithwebrtcandfirebase.adapter.MainRecyclerViewAdapter
 import com.example.androidvideocallwithwebrtcandfirebase.databinding.ActivityMainBinding
 import com.example.androidvideocallwithwebrtcandfirebase.repository.MainRepository
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MainRecyclerViewAdapter.Listener {
     private val TAG = "MainActivity"
     private lateinit var binding: ActivityMainBinding
     private var username: String? = null
 
     @Inject lateinit var mainRepository: MainRepository
+    private var mainAdapter: MainRecyclerViewAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,20 +44,38 @@ class MainActivity : AppCompatActivity() {
         if (username == null) finish()
 
        // 1. observe other users status
-        subsribeObservers()
+        subscribeObservers()
         //2. start foreground service to listen negotiations and calls
         startMyService()
 
     }
 
-    private fun subsribeObservers() {
+    private fun subscribeObservers() {
+        setupRecycleView()
         mainRepository.observeUserStatus {
-            Log.d(TAG, "subsribeObverservers: $it")
+            Log.d(TAG, "subscribeObservers: $it")
+            mainAdapter?.updateList(it)
         }
+    }
 
+    private fun setupRecycleView() {
+        mainAdapter = MainRecyclerViewAdapter(this)
+        val layoutManager = LinearLayoutManager(this)
+        binding.mainRecyclerView.apply {
+            setLayoutManager(layoutManager)
+            adapter = mainAdapter
+        }
     }
 
     private fun startMyService() {
 
+    }
+
+    override fun onVideoCallClicked(username: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onAudioCallClicked(username: String) {
+        TODO("Not yet implemented")
     }
 }

@@ -72,7 +72,7 @@ class FirebaseClient @Inject constructor(
                 }
 
                 Log.d("observeUserStatus", "currentUserName: $currentUserName" )
-                val list = snapshot.children.filter { it.key == currentUserName }
+                val list = snapshot.children.filter { it.key != currentUserName }
                     .map { it.key!! to it.child(STATUS).value.toString()
                 }
 
