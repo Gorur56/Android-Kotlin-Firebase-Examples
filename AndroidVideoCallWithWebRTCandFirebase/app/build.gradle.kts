@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.androidvideocallwithwebrtcandfirebase"
-        minSdk = 27
+        minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -59,9 +59,12 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
     kapt(libs.androidx.hilt.compiler)
+    implementation(libs.permissionx)
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.gson)
+
+    implementation(libs.webrtc)
 }
 
 kapt {

@@ -7,10 +7,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.androidvideocallwithwebrtcandfirebase.R
 import com.example.androidvideocallwithwebrtcandfirebase.databinding.ItemMainRecyclerViewBinding
 
-class MainRecyclerViewAdapter(private val listener: Listener) : RecyclerView.Adapter<MainRecyclerViewAdapter.MainRecyclerViewHolder>(){
+
+class MainRecyclerViewAdapter(private val listener:Listener) : RecyclerView.Adapter<MainRecyclerViewAdapter.MainRecyclerViewHolder>() {
 
     private var usersList:List<Pair<String,String>>?=null
-
     fun updateList(list:List<Pair<String,String>>){
         this.usersList = list
         notifyDataSetChanged()
@@ -21,6 +21,10 @@ class MainRecyclerViewAdapter(private val listener: Listener) : RecyclerView.Ada
             LayoutInflater.from(parent.context),parent,false
         )
         return MainRecyclerViewHolder(binding)
+    }
+
+    override fun getItemCount(): Int {
+        return usersList?.size?:0
     }
 
     override fun onBindViewHolder(holder: MainRecyclerViewHolder, position: Int) {
@@ -34,56 +38,52 @@ class MainRecyclerViewAdapter(private val listener: Listener) : RecyclerView.Ada
         }
     }
 
-    interface Listener {
+    interface  Listener {
         fun onVideoCallClicked(username:String)
         fun onAudioCallClicked(username:String)
     }
 
-    override fun getItemCount(): Int {
-        return usersList?.size ?: 0
-    }
+
 
     class MainRecyclerViewHolder(private val binding: ItemMainRecyclerViewBinding):
-        RecyclerView.ViewHolder(binding.root) {
+        RecyclerView.ViewHolder(binding.root){
         private val context = binding.root.context
 
         fun bind(
-            user: Pair<String, String>,
-            videoCallClicked: (String) -> Unit,
-            audioCallClicked: (String) -> Unit
-        ) {
+            user:Pair<String,String>,
+            videoCallClicked:(String) -> Unit,
+            audioCallClicked:(String)-> Unit
+        ){
             binding.apply {
                 when (user.second) {
                     "ONLINE" -> {
-                        imageViewVideoCallBtn.isVisible = true
-                        imageViewAudioCallBtn.isVisible = true
-                        imageViewVideoCallBtn.setOnClickListener {
+                        videoCallBtn.isVisible = true
+                        audioCallBtn.isVisible = true
+                        videoCallBtn.setOnClickListener {
                             videoCallClicked.invoke(user.first)
                         }
-                        imageViewAudioCallBtn.setOnClickListener {
+                        audioCallBtn.setOnClickListener {
                             audioCallClicked.invoke(user.first)
                         }
-                        textviewStatusTv.setTextColor(context.resources.getColor(R.color.light_green, null))
-                        textviewStatusTv.text = "Online"
+                        statusTv.setTextColor(context.resources.getColor(R.color.light_green, null))
+                        statusTv.text = "Online"
                     }
-
                     "OFFLINE" -> {
-                        imageViewVideoCallBtn.isVisible = false
-                        imageViewAudioCallBtn.isVisible = false
-                        textviewStatusTv.setTextColor(context.resources.getColor(R.color.red, null))
-                        textviewStatusTv.text = "Offline"
+                        videoCallBtn.isVisible = false
+                        audioCallBtn.isVisible = false
+                        statusTv.setTextColor(context.resources.getColor(R.color.red, null))
+                        statusTv.text = "Offline"
                     }
-
                     "IN_CALL" -> {
-                        imageViewVideoCallBtn.isVisible = false
-                        imageViewAudioCallBtn.isVisible = false
-                        textviewStatusTv.setTextColor(context.resources.getColor(R.color.yellow, null))
-                        textviewStatusTv.text = "In Call"
+                        videoCallBtn.isVisible = false
+                        audioCallBtn.isVisible = false
+                        statusTv.setTextColor(context.resources.getColor(R.color.yellow, null))
+                        statusTv.text = "In Call"
                     }
                 }
-                textviewUsernameTv.text = user.first
+
+                usernameTv.text = user.first
             }
         }
     }
-
 }

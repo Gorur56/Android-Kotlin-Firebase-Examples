@@ -1,6 +1,8 @@
 package com.example.androidvideocallwithwebrtcandfirebase.firebaseClient
 
 import android.util.Log
+import com.example.androidvideocallwithwebrtcandfirebase.utils.DataModel
+import com.example.androidvideocallwithwebrtcandfirebase.utils.FirebaseFieldNames.LATEST_EVENT
 import com.example.androidvideocallwithwebrtcandfirebase.utils.FirebaseFieldNames.PASSWORD
 import com.example.androidvideocallwithwebrtcandfirebase.utils.FirebaseFieldNames.STATUS
 import com.example.androidvideocallwithwebrtcandfirebase.utils.MyEventListener
@@ -10,17 +12,15 @@ import com.google.firebase.database.DatabaseReference
 import com.google.gson.Gson
 import javax.inject.Inject
 import javax.inject.Singleton
-
 @Singleton
 class FirebaseClient @Inject constructor(
-    private val dbRef: DatabaseReference,
-    private val gson: Gson
-){
+    private val dbRef:DatabaseReference,
+    private val gson:Gson
+) {
 
-    private var currentUserName: String? = null
-
-    private fun setUserName(userName: String) {
-        this.currentUserName = userName
+    private var currentUsername:String?=null
+    private fun setUsername(username: String){
+        this.currentUsername = username
     }
 
     fun login(username: String, password: String, done: (Boolean, String?) -> Unit) {
@@ -34,7 +34,7 @@ class FirebaseClient @Inject constructor(
                         //password is correct and sign in
                         dbRef.child(username).child(STATUS).setValue(UserStatus.ONLINE)
                             .addOnCompleteListener {
-                                setUserName(username)
+                                setUsername(username)
                                 done(true,null)
                             }.addOnFailureListener {
                                 done(false,"${it.message}")
@@ -49,7 +49,7 @@ class FirebaseClient @Inject constructor(
                     dbRef.child(username).child(PASSWORD).setValue(password).addOnCompleteListener {
                         dbRef.child(username).child(STATUS).setValue(UserStatus.ONLINE)
                             .addOnCompleteListener {
-                                setUserName(username)
+                                setUsername(username)
                                 done(true,null)
                             }.addOnFailureListener {
                                 done(false,it.message)
@@ -65,21 +65,63 @@ class FirebaseClient @Inject constructor(
 
     fun observeUsersStatus(status: (List<Pair<String, String>>) -> Unit) {
         dbRef.addValueEventListener(object : MyEventListener() {
-
             override fun onDataChange(snapshot: DataSnapshot) {
-                snapshot.children.forEach{
-                    Log.d("observeUserStatus", "Key: ${it.key}, status: ${it.child(STATUS).value}, currentUserName: $currentUserName")
+                val list = snapshot.children.filter { it.key !=currentUsername }.map {
+                    it.key!! to it.child(STATUS).value.toString()
                 }
-
-                Log.d("observeUserStatus", "currentUserName: $currentUserName" )
-                val list = snapshot.children.filter { it.key != currentUserName }
-                    .map { it.key!! to it.child(STATUS).value.toString()
-                }
-
-                Log.d("observeUserStatus", "Filtered List: $list")
                 status(list)
-
             }
         })
+    }
+
+    fun subscribeForLatestEvent(listener:Listener){
+        try {
+            dbRef.child(currentUsername!!).child(LATEST_EVENT).addValueEventListener(
+                object : MyEventListener() {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        super.onDataChange(snapshot)
+                        val event = try {
+                            gson.fromJson(snapshot.value.toString(), DataModel::class.java)
+                        }catch (e:Exception){
+                            e.printStackTrace()
+                            null
+                        }
+                        event?.let {
+                            listener.onLatestEventReceived(it)
+                        }
+                    }
+                }
+            )
+        }catch (e:Exception){
+            e.printStackTrace()
+        }
+    }
+
+    fun sendMessageToOtherClient(message:DataModel, success:(Boolean) -> Unit){
+        val convertedMessage = gson.toJson(message.copy(sender = currentUsername))
+        dbRef.child(message.target).child(LATEST_EVENT).setValue(convertedMessage)
+            .addOnCompleteListener {
+                success(true)
+            }.addOnFailureListener {
+                success(false)
+            }
+    }
+
+    fun changeMyStatus(status: UserStatus) {
+        dbRef.child(currentUsername!!).child(STATUS).setValue(status.name)
+    }
+
+    fun clearLatestEvent() {
+        dbRef.child(currentUsername!!).child(LATEST_EVENT).setValue(null)
+    }
+
+    fun logOff(function:()->Unit) {
+        dbRef.child(currentUsername!!).child(STATUS).setValue(UserStatus.OFFLINE)
+            .addOnCompleteListener { function() }
+    }
+
+
+    interface Listener {
+        fun onLatestEventReceived(event:DataModel)
     }
 }

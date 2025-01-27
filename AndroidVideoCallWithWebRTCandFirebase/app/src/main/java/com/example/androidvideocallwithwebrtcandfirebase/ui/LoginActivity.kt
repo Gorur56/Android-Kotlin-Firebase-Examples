@@ -1,7 +1,10 @@
 package com.example.androidvideocallwithwebrtcandfirebase.ui
 
+import android.content.Context
 import android.content.Intent
+import android.media.projection.MediaProjectionManager
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -15,36 +18,42 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityLoginBinding
+
+    private lateinit var  views:ActivityLoginBinding
     @Inject lateinit var mainRepository: MainRepository
+
+    private val REQUEST_CODE_SCREEN_CAPTURE = 1001
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-
-        binding = ActivityLoginBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+        views = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(views.root)
         init()
     }
 
-    private fun init() {
-        binding.apply {
-            buttonSignIn.setOnClickListener {
+    private fun requestScreenCapturePermission() {
+        val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        val permissionIntent = mediaProjectionManager.createScreenCaptureIntent()
+        startActivityForResult(permissionIntent, REQUEST_CODE_SCREEN_CAPTURE)
+    }
+
+
+
+    private fun init(){
+        requestScreenCapturePermission()
+
+        views.apply {
+            btn.setOnClickListener {
                 mainRepository.login(
-                    binding.edittextUsername.text.toString(), binding.edittextPassword.text.toString()
+                    usernameEt.text.toString(),passwordEt.text.toString()
                 ){ isDone, reason ->
-                    if(!isDone) {
-                        Snackbar.make(binding.root, reason?: "Unknown error ", Snackbar.LENGTH_SHORT).show()
-                    } else {
-                        //start moving to mainActivity
+                    if (!isDone){
+                        Toast.makeText(this@LoginActivity, reason, Toast.LENGTH_SHORT).show()
+                    }else{
+                        //start moving to our main activity
                         startActivity(Intent(this@LoginActivity, MainActivity::class.java).apply {
-                            putExtra("username", binding.edittextUsername.text.toString())
+                            putExtra("username",usernameEt.text.toString())
                         })
                     }
                 }

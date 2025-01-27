@@ -1,7 +1,6 @@
 package com.example.androidvideocallwithwebrtcandfirebase.utils
 
 import android.content.Context
-import com.example.androidvideocallwithwebrtcandfirebase.firebaseClient.FirebaseClient
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.Gson
@@ -16,15 +15,14 @@ import dagger.hilt.components.SingletonComponent
 class AppModule {
 
     @Provides
-    fun provideContext(@ApplicationContext context: Context) : Context = context.applicationContext
+    fun provideContext(@ApplicationContext context:Context) : Context = context.applicationContext
 
     @Provides
-    fun provideGson(): Gson  = Gson()
+    fun provideGson():Gson = Gson()
 
     @Provides
     fun provideDataBaseInstance():FirebaseDatabase = FirebaseDatabase.getInstance()
 
     @Provides
     fun provideDatabaseReference(db:FirebaseDatabase): DatabaseReference = db.reference
-
 }

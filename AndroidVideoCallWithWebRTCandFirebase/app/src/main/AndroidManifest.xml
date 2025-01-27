@@ -2,8 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.PROJECT_MEDIA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.CAPTURE_VIDEO_OUTPUT"
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:name=".utils.MyApplication"
@@ -25,9 +35,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.MainActivity"
-            android:exported="true" />
+        <activity android:name=".ui.MainActivity"
+            android:exported="true"/>
+        <activity android:name=".ui.CallActivity"
+            android:exported="true"/>
+        <activity android:name=".ui.CloseActivity"
+            android:exported="true"/>
+        <receiver android:name=".service.MainServiceReceiver"/>
+        <service android:name=".service.MainService"
+            android:foregroundServiceType="mediaProjection"/>
     </application>
 
 </manifest>
