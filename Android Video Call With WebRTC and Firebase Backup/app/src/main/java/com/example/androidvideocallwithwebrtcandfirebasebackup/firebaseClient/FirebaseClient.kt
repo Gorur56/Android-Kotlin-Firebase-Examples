@@ -2,6 +2,7 @@ package com.example.androidvideocallwithwebrtcandfirebasebackup.firebaseClient
 
 import com.example.androidvideocallwithwebrtcandfirebasebackup.utils.FirebaseFieldNames.PASSWORD
 import com.example.androidvideocallwithwebrtcandfirebasebackup.utils.FirebaseFieldNames.STATUS
+import com.example.androidvideocallwithwebrtcandfirebasebackup.utils.MyEventListener
 import com.example.androidvideocallwithwebrtcandfirebasebackup.utils.UserStatus
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -9,7 +10,9 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.gson.Gson
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class FirebaseClient @Inject constructor(
     private val dbRef: DatabaseReference,
     private val gson: Gson
@@ -22,7 +25,7 @@ class FirebaseClient @Inject constructor(
     }
 
     fun login(username: String, password: String, done: (Boolean, String?) -> Unit) {
-        dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        dbRef.addListenerForSingleValueEvent(object : MyEventListener() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 //if the current user exists
                 if( snapshot.hasChild(username)) {
@@ -58,9 +61,16 @@ class FirebaseClient @Inject constructor(
 
                 }
             }
+        })
+    }
 
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+    fun observeUsersStatus(status: (List<Pair<String, String>>) -> Unit) {
+        dbRef.addValueEventListener(object : MyEventListener() {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = snapshot.children.filter { it.key != currentUsername }.map {
+                    it.key!! to it.child(STATUS).value.toString()
+                }
+                status(list)
             }
 
         })

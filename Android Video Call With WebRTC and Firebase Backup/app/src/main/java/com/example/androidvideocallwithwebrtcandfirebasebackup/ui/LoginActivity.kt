@@ -1,5 +1,6 @@
 package com.example.androidvideocallwithwebrtcandfirebasebackup.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -36,6 +37,9 @@ class LoginActivity : AppCompatActivity() {
                         Snackbar.make(views.root, reason!!, Snackbar.LENGTH_SHORT).show()
                     } else {
                         //Start moving to our main activity
+                        startActivity(Intent(this@LoginActivity, MainActivity::class.java).apply {
+                            putExtra("username", usernameEt.text.toString())
+                        })
                     }
 
                 }
