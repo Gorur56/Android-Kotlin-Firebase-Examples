@@ -12,6 +12,7 @@ import com.example.androidvideocallwithwebrtcandfirebasebackup.adapter.AdapterLi
 import com.example.androidvideocallwithwebrtcandfirebasebackup.adapter.MainRecycleViewAdapter
 import com.example.androidvideocallwithwebrtcandfirebasebackup.databinding.ActivityMainBinding
 import com.example.androidvideocallwithwebrtcandfirebasebackup.repository.MainRepository
+import com.example.androidvideocallwithwebrtcandfirebasebackup.service.MainServiceRepository
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -22,6 +23,8 @@ class MainActivity : AppCompatActivity(), AdapterListener {
     private var username: String ?= null
 
     @Inject lateinit var mainRepository: MainRepository
+    @Inject lateinit var mainServiceRepository: MainServiceRepository
+
     private var mainAdapter: MainRecycleViewAdapter ?= null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,7 +64,7 @@ class MainActivity : AppCompatActivity(), AdapterListener {
     }
 
     private fun startService() {
-
+        mainServiceRepository.startService(username!!)
     }
 
     override fun onVideoCallClicked(username: String) {

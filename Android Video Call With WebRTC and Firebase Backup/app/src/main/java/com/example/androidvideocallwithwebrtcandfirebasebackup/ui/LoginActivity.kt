@@ -1,6 +1,8 @@
 package com.example.androidvideocallwithwebrtcandfirebasebackup.ui
 
+import android.content.Context
 import android.content.Intent
+import android.media.projection.MediaProjectionManager
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -19,12 +21,21 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var views: ActivityLoginBinding
     @Inject lateinit var mainRepository: MainRepository
 
+    private val REQUEST_CODE_SCREEN_CAPTURE = 1001
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         views = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(views.root)
 
+        requestScreenCapturePermission()
         init()
+    }
+
+    private fun requestScreenCapturePermission() {
+        val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        val permissionIntent = mediaProjectionManager.createScreenCaptureIntent()
+        startActivityForResult(permissionIntent, REQUEST_CODE_SCREEN_CAPTURE)
     }
 
     private fun init() {
