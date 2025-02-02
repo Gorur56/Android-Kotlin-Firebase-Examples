@@ -1,5 +1,7 @@
 package com.example.androidvideocallwithwebrtcandfirebasebackup.firebaseClient
 
+import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModel
+import com.example.androidvideocallwithwebrtcandfirebasebackup.utils.FirebaseFieldNames.LATEST_EVENT
 import com.example.androidvideocallwithwebrtcandfirebasebackup.utils.FirebaseFieldNames.PASSWORD
 import com.example.androidvideocallwithwebrtcandfirebasebackup.utils.FirebaseFieldNames.STATUS
 import com.example.androidvideocallwithwebrtcandfirebasebackup.utils.MyEventListener
@@ -75,4 +77,40 @@ class FirebaseClient @Inject constructor(
 
         })
     }
+
+    fun subscribeForLatestEvent(listener: FirebaseClientListener){
+        try {
+            dbRef.child(currentUsername!!).child(LATEST_EVENT).addValueEventListener(
+                object : MyEventListener() {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        super.onDataChange(snapshot)
+                        val event = try {
+                            gson.fromJson(snapshot.value.toString(), DataModel::class.java)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            null
+                        }
+                        event?.let {
+                            listener.onLatestEventReceived(it)
+                        }
+                    }
+                }
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun sendMessageToOtherClient(message: DataModel, success:(Boolean) -> Unit){
+        val convertedMessage = gson.toJson(message.copy(sender = currentUsername))
+
+        dbRef.child(message.target).child(LATEST_EVENT).setValue(convertedMessage)
+            .addOnCompleteListener {
+                success(true)
+            }.addOnFailureListener {
+                success(false)
+            }
+    }
+
+
 }

@@ -6,16 +6,24 @@ import android.app.Service
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.androidvideocallwithwebrtcandfirebasebackup.R
+import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModel
+import com.example.androidvideocallwithwebrtcandfirebasebackup.repository.MainRepository
+import com.example.androidvideocallwithwebrtcandfirebasebackup.repository.MainRepositoryListener
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.androidvideocallwithwebrtcandfirebasebackup.service.MainServiceActions.*
+import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainService : Service() {
+class MainService : Service(), MainRepositoryListener {
+    private val TAG = "MainService"
 
     private var isServiceRunning = false
     private var username: String ?= null
+
+    @Inject lateinit var mainRepository: MainRepository
 
     private lateinit var notificationManager: NotificationManager
 
@@ -45,6 +53,9 @@ class MainService : Service() {
             startServiceWithNotification()
 
             //setup my clients
+            mainRepository.listener = this
+            mainRepository.initFirebase()
+
         }
     }
 
@@ -66,5 +77,9 @@ class MainService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
+    }
+
+    override fun onLatestEventReceived(data: DataModel) {
+        Log.d(TAG, "onLatestEventReceived: $data")
     }
 }
