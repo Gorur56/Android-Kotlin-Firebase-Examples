@@ -10,6 +10,8 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.androidvideocallwithwebrtcandfirebasebackup.R
 import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModel
+import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModelType
+import com.example.androidvideocallwithwebrtcandfirebasebackup.data.isValid
 import com.example.androidvideocallwithwebrtcandfirebasebackup.repository.MainRepository
 import com.example.androidvideocallwithwebrtcandfirebasebackup.repository.MainRepositoryListener
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,6 +28,10 @@ class MainService : Service(), MainRepositoryListener {
     @Inject lateinit var mainRepository: MainRepository
 
     private lateinit var notificationManager: NotificationManager
+
+    companion object {
+        var listener: MainServiceListener ?= null
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -81,5 +87,15 @@ class MainService : Service(), MainRepositoryListener {
 
     override fun onLatestEventReceived(data: DataModel) {
         Log.d(TAG, "onLatestEventReceived: $data")
+
+        if( data.isValid()) {
+            when(data.type) {
+                DataModelType.StartVideoCall,
+                DataModelType.StartAudioCall -> {
+                    listener?.onCallReceived(data)
+                }
+                else -> Unit
+            }
+        }
     }
 }

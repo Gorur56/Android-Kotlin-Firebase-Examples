@@ -34,9 +34,9 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun requestScreenCapturePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // Android 14 (API 34)
-            requestPermissions(arrayOf("android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION"), REQUEST_CODE_SCREEN_CAPTURE)
-        }
+        val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        val permissionIntent = mediaProjectionManager.createScreenCaptureIntent()
+        startActivityForResult(permissionIntent, REQUEST_CODE_SCREEN_CAPTURE)
     }
 
     private fun init() {
