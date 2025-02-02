@@ -1,6 +1,8 @@
 package com.example.androidvideocallwithwebrtcandfirebasebackup.repository
 
 import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModel
+import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModelType
+import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModelType.*
 import com.example.androidvideocallwithwebrtcandfirebasebackup.firebaseClient.FirebaseClient
 import com.example.androidvideocallwithwebrtcandfirebasebackup.firebaseClient.FirebaseClientListener
 import javax.inject.Inject
@@ -30,5 +32,14 @@ class MainRepository @Inject constructor(
             }
 
         })
+    }
+
+    fun sendConnectionRequest( target: String, isVideoCall: Boolean, success:(Boolean) -> Unit) {
+        firebaseClient.sendMessageToOtherClient(
+            DataModel(
+                type = if (isVideoCall) StartVideoCall else StartAudioCall,
+                target = target
+            ), success
+        )
     }
 }

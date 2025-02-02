@@ -13,6 +13,7 @@ import com.example.androidvideocallwithwebrtcandfirebasebackup.adapter.MainRecyc
 import com.example.androidvideocallwithwebrtcandfirebasebackup.databinding.ActivityMainBinding
 import com.example.androidvideocallwithwebrtcandfirebasebackup.repository.MainRepository
 import com.example.androidvideocallwithwebrtcandfirebasebackup.service.MainServiceRepository
+import com.example.androidvideocallwithwebrtcandfirebasebackup.utils.getCameraAndMicPermission
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -68,10 +69,26 @@ class MainActivity : AppCompatActivity(), AdapterListener {
     }
 
     override fun onVideoCallClicked(username: String) {
+        // check if permission of mic and camera is taken
+        getCameraAndMicPermission {
+            mainRepository.sendConnectionRequest(username, true){
+                if( it ) {
+                    //we have to start video call
+                }
 
+            }
+        }
     }
 
     override fun onAudioCallClicked(username: String) {
+        getCameraAndMicPermission {
+            mainRepository.sendConnectionRequest(username, false) {
+                if(it) {
+                    // we have to start audio call
+                    // we wanna create an intent move to call activity
+                }
+            }
 
+        }
     }
 }

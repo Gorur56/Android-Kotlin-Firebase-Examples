@@ -59,6 +59,8 @@ dependencies {
     kapt(libs.hilt.android.compiler)
 
     implementation(libs.gson)
+
+    implementation(libs.permissionx)
 }
 
 kapt {
