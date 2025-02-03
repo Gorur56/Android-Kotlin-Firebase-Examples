@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.androidvideocallwithwebrtcandfirebasebackup"
-        minSdk = 27
+        minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -43,6 +43,13 @@ android {
     }
 }
 
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -55,12 +62,16 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
+    // Hilt Bağımlılıkları
+    implementation("com.google.dagger:hilt-android:2.51")
+    kapt("com.google.dagger:hilt-compiler:2.51")
+    kapt("androidx.hilt:hilt-compiler:1.2.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
-    implementation(libs.gson)
-
-    implementation(libs.permissionx)
+    // Diğer Bağımlılıklar
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.guolindev.permissionx:permissionx:1.7.1")
+    implementation("com.mesibo.api:webrtc:1.0.5")
 }
 
 kapt {
