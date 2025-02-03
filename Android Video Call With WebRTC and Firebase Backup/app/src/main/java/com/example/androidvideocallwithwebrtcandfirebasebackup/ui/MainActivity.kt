@@ -1,5 +1,6 @@
 package com.example.androidvideocallwithwebrtcandfirebasebackup.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
@@ -82,6 +83,12 @@ class MainActivity : AppCompatActivity(), AdapterListener, MainServiceListener {
             mainRepository.sendConnectionRequest(username, true){
                 if( it ) {
                     //we have to start video call
+                    //We wanna create an intent to move to call activity
+                    startActivity(Intent(this, CallActivity::class.java).apply {
+                        putExtra("target", username)
+                        putExtra("isVideoCall", true)
+                        putExtra("isCaller", true)
+                    })
                 }
 
             }
@@ -94,7 +101,11 @@ class MainActivity : AppCompatActivity(), AdapterListener, MainServiceListener {
                 if(it) {
                     // we have to start audio call
                     // we wanna create an intent move to call activity
-                    Snackbar.make(views.root, "moving to video call activity", Snackbar.LENGTH_SHORT).show()
+                    startActivity(Intent(this, CallActivity::class.java).apply {
+                        putExtra("target", username)
+                        putExtra("isVideoCall", false)
+                        putExtra("isCaller", true)
+                    })
                 }
             }
 
@@ -108,15 +119,18 @@ class MainActivity : AppCompatActivity(), AdapterListener, MainServiceListener {
                 val isVideoCallText = if (isVideoCall) "Video" else "Audio"
 
                 incomingCallTitleTv.text = "${model.sender} is $isVideoCallText Calling you"
-                incomingCallTitleTv.isVisible = true
+                incomingCallLayout.isVisible = true
 
                 acceptButton.setOnClickListener {
                     getCameraAndMicPermission {
                         incomingCallLayout.isVisible = false
 
                         //create an intent to go to video call activity
-
-                        Snackbar.make(views.root, "onCallReceived: moving to video call activity", Snackbar.LENGTH_SHORT).show()
+                        startActivity(Intent(this@MainActivity, CallActivity::class.java).apply {
+                            putExtra("target", model.sender)
+                            putExtra("isVideoCall", isVideoCall)
+                            putExtra("isCaller", false)
+                        })
                     }
                 }
 

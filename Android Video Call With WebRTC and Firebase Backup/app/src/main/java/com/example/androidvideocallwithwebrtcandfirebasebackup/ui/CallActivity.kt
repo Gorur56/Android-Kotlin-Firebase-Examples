@@ -5,25 +5,43 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import com.example.androidvideocallwithwebrtcandfirebasebackup.R
 import com.example.androidvideocallwithwebrtcandfirebasebackup.databinding.ActivityCallBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class CallActivity : AppCompatActivity() {
+
+    private var target: String ?= null
+    private var isVideoCall: Boolean = true
+    private var isCaller: Boolean = true
+
     private lateinit var views: ActivityCallBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-
         views = ActivityCallBinding.inflate(layoutInflater)
         setContentView(views.root)
+        init()
+    }
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+    private fun init() {
+        intent.getStringExtra("target")?.let {
+            this.target = it
+        }?: kotlin.run {
+            finish()
+        }
+
+        isVideoCall = intent.getBooleanExtra("isVideoCall", true)
+        isCaller = intent.getBooleanExtra("isCaller", true)
+
+        views.apply {
+            if(!isVideoCall) {
+                toggleCameraButton.isVisible = false
+                screenShareButton.isVisible = false
+                switchCameraButton.isVisible = false
+            }
         }
     }
 }

@@ -1,8 +1,7 @@
 package com.example.androidvideocallwithwebrtcandfirebasebackup.utils
 
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.androidvideocallwithwebrtcandfirebasebackup.R
-import com.google.android.material.snackbar.Snackbar
 import com.permissionx.guolindev.PermissionX
 
 
@@ -16,11 +15,8 @@ fun AppCompatActivity.getCameraAndMicPermission( success:() -> Unit) {
             if (allGranted) {
                 success()
             } else {
-                Snackbar.make(
-                    findViewById(com.permissionx.guolindev.R.id.content),
-                    "Camera and mic permission is required",
-                    Snackbar.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this, "camera and mic permission is required", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 }
