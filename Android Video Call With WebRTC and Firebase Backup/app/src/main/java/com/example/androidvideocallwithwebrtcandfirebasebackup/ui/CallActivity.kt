@@ -8,7 +8,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import com.example.androidvideocallwithwebrtcandfirebasebackup.R
 import com.example.androidvideocallwithwebrtcandfirebasebackup.databinding.ActivityCallBinding
+import com.example.androidvideocallwithwebrtcandfirebasebackup.service.MainServiceRepository
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class CallActivity : AppCompatActivity() {
@@ -16,6 +18,8 @@ class CallActivity : AppCompatActivity() {
     private var target: String ?= null
     private var isVideoCall: Boolean = true
     private var isCaller: Boolean = true
+
+    @Inject lateinit var serviceRepository: MainServiceRepository
 
     private lateinit var views: ActivityCallBinding
 
@@ -42,6 +46,8 @@ class CallActivity : AppCompatActivity() {
                 screenShareButton.isVisible = false
                 switchCameraButton.isVisible = false
             }
+
+            serviceRepository.setupViews(isVideoCall, isCaller, target!!)
         }
     }
 }

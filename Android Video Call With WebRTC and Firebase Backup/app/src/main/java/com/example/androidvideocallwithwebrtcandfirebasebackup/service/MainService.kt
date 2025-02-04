@@ -44,11 +44,27 @@ class MainService : Service(), MainRepositoryListener {
         intent?.let { incomingIntent ->
             when(incomingIntent.action) {
                 START_SERVICE.name -> handleStartService(incomingIntent)
+                SETUP_VIEWS.name -> handleSetupViews(incomingIntent)
                 else -> Unit
             }
         }
 
         return START_STICKY
+    }
+
+    private fun handleSetupViews( incomingIntent: Intent) {
+        val isCaller = incomingIntent.getBooleanExtra("isCaller", false)
+        val isVideoCall = incomingIntent.getBooleanExtra("isVideoCall", true)
+        val target = incomingIntent.getStringExtra("target")
+
+        mainRepository.setTarget(target!!)
+        //initialize our widgets and start  streaming our video and audio source
+        //and get prepared for call
+
+        if(!isCaller) {
+            //start the video call
+            //mainRepository.startCall()
+        }
     }
 
     private fun handleStartService(incomingIntent: Intent) {

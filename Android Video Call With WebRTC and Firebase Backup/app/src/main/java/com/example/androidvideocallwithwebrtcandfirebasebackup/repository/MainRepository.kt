@@ -11,6 +11,7 @@ class MainRepository @Inject constructor(
     private val firebaseClient: FirebaseClient
 ){
 
+    private var target:String ?= null
     var listener: MainRepositoryListener ?= null
 
     fun login( username: String, password: String, isDone: (Boolean,String?) -> Unit) {
@@ -41,5 +42,13 @@ class MainRepository @Inject constructor(
                 target = target
             ), success
         )
+    }
+
+    fun setTarget(target: String) {
+        this.target = target
+    }
+
+    fun startCall() {
+
     }
 }
