@@ -101,15 +101,22 @@ class FirebaseClient @Inject constructor(
         }
     }
 
-    fun sendMessageToOtherClient(message: DataModel, success:(Boolean) -> Unit){
+    fun sendMessageToOtherClient(message:DataModel, success:(Boolean) -> Unit){
         val convertedMessage = gson.toJson(message.copy(sender = currentUsername))
-
         dbRef.child(message.target).child(LATEST_EVENT).setValue(convertedMessage)
             .addOnCompleteListener {
                 success(true)
             }.addOnFailureListener {
                 success(false)
             }
+    }
+
+    fun changeMyStatus(status: UserStatus) {
+        dbRef.child(currentUsername!!).child(STATUS).setValue(status.name)
+    }
+
+    fun clearLatestEvent() {
+        dbRef.child(currentUsername!!).child(LATEST_EVENT).setValue(null)
     }
 
 

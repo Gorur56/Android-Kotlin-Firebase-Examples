@@ -5,11 +5,22 @@ import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModelTyp
 import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModelType.*
 import com.example.androidvideocallwithwebrtcandfirebasebackup.firebaseClient.FirebaseClient
 import com.example.androidvideocallwithwebrtcandfirebasebackup.firebaseClient.FirebaseClientListener
+import com.example.androidvideocallwithwebrtcandfirebasebackup.utils.UserStatus
+import com.example.androidvideocallwithwebrtcandfirebasebackup.webrtc.MyPeerObserver
+import com.example.androidvideocallwithwebrtcandfirebasebackup.webrtc.WebRTCClient
+import com.example.androidvideocallwithwebrtcandfirebasebackup.webrtc.WebRTCListener
+import org.webrtc.IceCandidate
+import org.webrtc.MediaStream
+import org.webrtc.PeerConnection
+import org.webrtc.SurfaceViewRenderer
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class MainRepository @Inject constructor(
-    private val firebaseClient: FirebaseClient
-){
+    private val firebaseClient: FirebaseClient,
+    private val webRTCClient: WebRTCClient
+) : WebRTCListener {
 
     private var target:String ?= null
     var listener: MainRepositoryListener ?= null
@@ -48,7 +59,77 @@ class MainRepository @Inject constructor(
         this.target = target
     }
 
-    fun startCall() {
+    fun initWebrtcClient( username: String ) {
+        webRTCClient.listener = this
+        webRTCClient.initializeWebrtcClient(username, object : MyPeerObserver() {
+            override fun onAddStream(mS: MediaStream?) {
+                super.onAddStream( mS)
+                //notify the creator of this class that there is a new stream available
+            }
 
+            override fun onIceCandidate(iC: IceCandidate?) {
+                super.onIceCandidate(iC)
+                iC?.let {
+                    webRTCClient.sendIceCandidate(target!!, it)
+                }
+            }
+
+            override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
+                super.onConnectionChange(newState)
+                if( newState == PeerConnection.PeerConnectionState.CONNECTED) {
+                    //1. change my status to in call
+                    changeMyStatus( UserStatus.IN_CALL)
+
+                    //2. clear latest event inside my user section in firebase database
+                    firebaseClient.clearLatestEvent()
+                }
+            }
+        })
+    }
+
+    fun initLocalSurfaceView( view: SurfaceViewRenderer, isVideoCall: Boolean) {
+        webRTCClient.initLocalSurfaceView(view, isVideoCall)
+    }
+
+    fun initRemoteSurfaceView(view: SurfaceViewRenderer, isVideoCall: Boolean) {
+        webRTCClient.initRemoteSurface(view)
+    }
+
+    fun startCall() {
+        webRTCClient.call(target!!)
+    }
+
+    fun endCall() {
+        webRTCClient.closeConnection()
+        changeMyStatus(UserStatus.ONLINE)
+    }
+
+    fun sendEndCall() {
+        onTransferEventSocket(
+            DataModel(
+                type = EndCall,
+                target = target!!
+            )
+        )
+    }
+
+    private fun changeMyStatus( status: UserStatus) {
+        firebaseClient.changeMyStatus( status )
+    }
+
+    fun toggleAudio( shouldBeMuted: Boolean ) {
+        webRTCClient.toggleAudio( shouldBeMuted)
+    }
+
+    fun toggleVideo( shouldBeMuted: Boolean ) {
+        webRTCClient.switchCamera()
+    }
+
+    fun switchCamera() {
+        webRTCClient.switchCamera()
+    }
+
+    override fun onTransferEventSocket(data: DataModel) {
+        firebaseClient.sendMessageToOtherClient(data) {}
     }
 }
