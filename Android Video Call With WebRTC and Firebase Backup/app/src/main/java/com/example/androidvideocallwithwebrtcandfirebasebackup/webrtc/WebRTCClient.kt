@@ -1,6 +1,8 @@
 package com.example.androidvideocallwithwebrtcandfirebasebackup.webrtc
 
 import android.content.Context
+import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModel
+import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModelType
 import com.google.gson.Gson
 import org.webrtc.AudioTrack
 import org.webrtc.Camera2Enumerator
@@ -8,10 +10,12 @@ import org.webrtc.CameraVideoCapturer
 import org.webrtc.DefaultVideoDecoderFactory
 import org.webrtc.DefaultVideoEncoderFactory
 import org.webrtc.EglBase
+import org.webrtc.IceCandidate
 import org.webrtc.MediaConstraints
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
+import org.webrtc.SessionDescription
 import org.webrtc.SurfaceTextureHelper
 import org.webrtc.SurfaceViewRenderer
 import org.webrtc.VideoTrack
@@ -39,6 +43,10 @@ class WebRTCClient @Inject constructor(
     private val localAudioSource by lazy { peerConnectionFactory.createAudioSource( MediaConstraints())}
     private val videoCapturer = getVideoCapture(context)
     private var surfaceTextureHelper: SurfaceTextureHelper ?= null
+    private val mediaConstraint = MediaConstraints().apply {
+        mandatory.add( MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"))
+        mandatory.add( MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"))
+    }
 
     //call variables
     private lateinit var localSurfaceView: SurfaceViewRenderer
@@ -49,6 +57,7 @@ class WebRTCClient @Inject constructor(
     private var localAudioTrack: AudioTrack ?= null
     private var localVideoTrack: VideoTrack ?= null
 
+    //installing requirments section
     init {
         initPeerConnectionFactory()
     }
@@ -85,6 +94,100 @@ class WebRTCClient @Inject constructor(
         return peerConnectionFactory.createPeerConnection(iceServer, observer)
     }
 
+    //negotiation section
+    fun call(target: String) {
+        peerConnection?.createOffer(object : MySdpObserver() {
+            override fun onCreateSuccess(desc: SessionDescription?) {
+                super.onCreateSuccess(desc)
+                peerConnection?.setLocalDescription( object : MySdpObserver() {
+                    override fun onSetSuccess() {
+                        super.onSetSuccess()
+                        listener?.onTransferEventSocket(
+                            DataModel( type = DataModelType.Offer,
+                                sender = username,
+                                target = target,
+                                data = desc?.description)
+                        )
+                    }
+                }, desc)
+            }
+        }, mediaConstraint)
+    }
+
+    fun answer(target: String) {
+        peerConnection?.createAnswer( object : MySdpObserver() {
+            override fun onCreateSuccess(desc: SessionDescription?) {
+                super.onCreateSuccess(desc)
+                peerConnection?.setLocalDescription( object : MySdpObserver() {
+                    override fun onSetSuccess() {
+                        super.onSetSuccess()
+                        listener?.onTransferEventSocket(
+                            DataModel(type = DataModelType.Answer,
+                                sender = username,
+                                target = target,
+                                data = desc?. description)
+                        )
+                    }
+                }, desc)
+            }
+        }, mediaConstraint)
+    }
+
+    fun onRemoteSessionReceived( sessionDescription: SessionDescription) {
+        peerConnection?.setRemoteDescription(MySdpObserver(), sessionDescription)
+    }
+
+    private fun addIceCandidateToPeer( iceCandidate: IceCandidate ) {
+        peerConnection?.addIceCandidate(iceCandidate)
+    }
+
+    fun sendIceCandidate( target: String, iceCandidate: IceCandidate ) {
+        addIceCandidateToPeer(iceCandidate)
+        listener?.onTransferEventSocket(
+            DataModel(
+                type = DataModelType.IceCandidates,
+                sender = username,
+                target = target,
+                data = gson.toJson(iceCandidate)
+            )
+        )
+    }
+
+    fun closeConnection() {
+        try {
+            videoCapturer.dispose()
+            localStream?.dispose()
+            peerConnection?.close()
+        } catch ( e: Exception ) {
+            e.printStackTrace()
+        }
+    }
+
+    fun switchCamera() {
+        videoCapturer.switchCamera(null)
+    }
+
+    fun toggleAudio( shouldBeMuted: Boolean) {
+        if( shouldBeMuted ) {
+            localStream?.removeTrack(localAudioTrack)
+        } else {
+            localStream?.addTrack(localAudioTrack)
+        }
+    }
+
+    fun toggleVideo( shouldBeMuted: Boolean) {
+        try {
+            if( shouldBeMuted) {
+                stopCapturingCamera()
+            } else {
+                startCapturingCamera(localSurfaceView)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    //streming section
     private fun initSurfaceView( view: SurfaceViewRenderer) {
         view.run {
             setMirror(false)
