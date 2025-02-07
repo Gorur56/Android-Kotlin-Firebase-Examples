@@ -9,9 +9,11 @@ import com.example.androidvideocallwithwebrtcandfirebasebackup.utils.UserStatus
 import com.example.androidvideocallwithwebrtcandfirebasebackup.webrtc.MyPeerObserver
 import com.example.androidvideocallwithwebrtcandfirebasebackup.webrtc.WebRTCClient
 import com.example.androidvideocallwithwebrtcandfirebasebackup.webrtc.WebRTCListener
+import com.google.gson.Gson
 import org.webrtc.IceCandidate
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
+import org.webrtc.SessionDescription
 import org.webrtc.SurfaceViewRenderer
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,11 +21,13 @@ import javax.inject.Singleton
 @Singleton
 class MainRepository @Inject constructor(
     private val firebaseClient: FirebaseClient,
-    private val webRTCClient: WebRTCClient
+    private val webRTCClient: WebRTCClient,
+    private val gson: Gson
 ) : WebRTCListener {
 
     private var target:String ?= null
     var listener: MainRepositoryListener ?= null
+    private var remoteView: SurfaceViewRenderer ?= null
 
     fun login( username: String, password: String, isDone: (Boolean,String?) -> Unit) {
         firebaseClient.login(username, password, isDone)
@@ -39,6 +43,37 @@ class MainRepository @Inject constructor(
                 listener?.onLatestEventReceived(event)
 
                 when(event.type){
+                    Offer -> {
+                        webRTCClient.onRemoteSessionReceived(
+                            SessionDescription(
+                                SessionDescription.Type.OFFER,
+                                event.data.toString()
+                            )
+                        )
+                        webRTCClient.answer(target!!)
+                    }
+                    Answer -> {
+                        webRTCClient.onRemoteSessionReceived(
+                            SessionDescription(
+                                SessionDescription.Type.ANSWER,
+                                event.data.toString()
+                            )
+                        )
+                    }
+                    IceCandidates -> {
+                        val candidate: IceCandidate? = try {
+                            gson.fromJson(event.data.toString(), IceCandidate::class.java)
+                        } catch ( e: Exception) {
+                            null
+                        }
+                        candidate?.let{
+                            webRTCClient.addIceCandidateToPeer(it)
+                        }
+                    }
+                    EndCall -> {
+                        listener?.endCall()
+                    }
+
                     else -> Unit
                 }
             }
@@ -63,8 +98,13 @@ class MainRepository @Inject constructor(
         webRTCClient.listener = this
         webRTCClient.initializeWebrtcClient(username, object : MyPeerObserver() {
             override fun onAddStream(mS: MediaStream?) {
-                super.onAddStream( mS)
+                super.onAddStream(mS)
                 //notify the creator of this class that there is a new stream available
+                try {
+                    mS?.videoTracks?.get(0)?.addSink(remoteView)
+                } catch ( e: Exception) {
+                    e.printStackTrace()
+                }
             }
 
             override fun onIceCandidate(iC: IceCandidate?) {
@@ -91,8 +131,9 @@ class MainRepository @Inject constructor(
         webRTCClient.initLocalSurfaceView(view, isVideoCall)
     }
 
-    fun initRemoteSurfaceView(view: SurfaceViewRenderer, isVideoCall: Boolean) {
+    fun initRemoteSurfaceView(view: SurfaceViewRenderer) {
         webRTCClient.initRemoteSurface(view)
+        this.remoteView = view
     }
 
     fun startCall() {

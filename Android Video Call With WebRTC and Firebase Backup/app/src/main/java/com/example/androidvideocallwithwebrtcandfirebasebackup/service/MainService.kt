@@ -16,6 +16,7 @@ import com.example.androidvideocallwithwebrtcandfirebasebackup.repository.MainRe
 import com.example.androidvideocallwithwebrtcandfirebasebackup.repository.MainRepositoryListener
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.androidvideocallwithwebrtcandfirebasebackup.service.MainServiceActions.*
+import org.webrtc.SurfaceViewRenderer
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -31,6 +32,8 @@ class MainService : Service(), MainRepositoryListener {
 
     companion object {
         var listener: MainServiceListener ?= null
+        var localSurfaceView: SurfaceViewRenderer ?= null
+        var remoteSurfaceView: SurfaceViewRenderer ?= null
     }
 
     override fun onCreate() {
@@ -60,6 +63,8 @@ class MainService : Service(), MainRepositoryListener {
         mainRepository.setTarget(target!!)
         //initialize our widgets and start  streaming our video and audio source
         //and get prepared for call
+        mainRepository.initLocalSurfaceView(localSurfaceView!!, isVideoCall)
+        mainRepository.initRemoteSurfaceView(remoteSurfaceView!!)
 
         if(!isCaller) {
             //start the video call
@@ -77,6 +82,7 @@ class MainService : Service(), MainRepositoryListener {
             //setup my clients
             mainRepository.listener = this
             mainRepository.initFirebase()
+            mainRepository.initWebrtcClient(username!!)
 
         }
     }
@@ -113,5 +119,9 @@ class MainService : Service(), MainRepositoryListener {
                 else -> Unit
             }
         }
+    }
+
+    override fun endCall() {
+        TODO("Not yet implemented")
     }
 }

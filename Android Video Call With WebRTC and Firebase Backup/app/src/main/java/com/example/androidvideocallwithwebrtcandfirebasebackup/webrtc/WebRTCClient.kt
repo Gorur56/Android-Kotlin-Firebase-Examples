@@ -139,7 +139,7 @@ class WebRTCClient @Inject constructor(
         peerConnection?.setRemoteDescription(MySdpObserver(), sessionDescription)
     }
 
-    private fun addIceCandidateToPeer( iceCandidate: IceCandidate ) {
+    fun addIceCandidateToPeer( iceCandidate: IceCandidate ) {
         peerConnection?.addIceCandidate(iceCandidate)
     }
 
