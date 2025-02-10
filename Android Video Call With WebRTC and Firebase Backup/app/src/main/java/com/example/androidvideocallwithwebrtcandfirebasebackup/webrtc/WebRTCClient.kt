@@ -220,20 +220,20 @@ class WebRTCClient @Inject constructor(
         peerConnection?.addStream(localStream)
     }
 
-    private fun startCapturingCamera(localView: SurfaceViewRenderer) {
+    private fun startCapturingCamera(localView: SurfaceViewRenderer){
         surfaceTextureHelper = SurfaceTextureHelper.create(
-            Thread.currentThread().name, eglBaseContext
+            Thread.currentThread().name,eglBaseContext
         )
 
         videoCapturer.initialize(
-            surfaceTextureHelper,context, localVideoSource.capturerObserver
+            surfaceTextureHelper,context,localVideoSource.capturerObserver
         )
 
         videoCapturer.startCapture(
             720,480,20
         )
 
-        localVideoTrack = peerConnectionFactory.createVideoTrack(localTrackId + "_video", localVideoSource)
+        localVideoTrack = peerConnectionFactory.createVideoTrack(localTrackId+"_video",localVideoSource)
         localVideoTrack?.addSink(localView)
         localStream?.addTrack(localVideoTrack)
     }

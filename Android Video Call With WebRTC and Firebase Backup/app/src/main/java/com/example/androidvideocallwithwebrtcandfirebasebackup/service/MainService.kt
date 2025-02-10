@@ -32,6 +32,7 @@ class MainService : Service(), MainRepositoryListener {
 
     companion object {
         var listener: MainServiceListener ?= null
+        var endCallListener: EndCallListener ?= null
         var localSurfaceView: SurfaceViewRenderer ?= null
         var remoteSurfaceView: SurfaceViewRenderer ?= null
     }
@@ -48,28 +49,12 @@ class MainService : Service(), MainRepositoryListener {
             when(incomingIntent.action) {
                 START_SERVICE.name -> handleStartService(incomingIntent)
                 SETUP_VIEWS.name -> handleSetupViews(incomingIntent)
+                END_CALL.name -> handleEndCall()
                 else -> Unit
             }
         }
 
         return START_STICKY
-    }
-
-    private fun handleSetupViews( incomingIntent: Intent) {
-        val isCaller = incomingIntent.getBooleanExtra("isCaller", false)
-        val isVideoCall = incomingIntent.getBooleanExtra("isVideoCall", true)
-        val target = incomingIntent.getStringExtra("target")
-
-        mainRepository.setTarget(target!!)
-        //initialize our widgets and start  streaming our video and audio source
-        //and get prepared for call
-        mainRepository.initLocalSurfaceView(localSurfaceView!!, isVideoCall)
-        mainRepository.initRemoteSurfaceView(remoteSurfaceView!!)
-
-        if(!isCaller) {
-            //start the video call
-            //mainRepository.startCall()
-        }
     }
 
     private fun handleStartService(incomingIntent: Intent) {
@@ -85,6 +70,37 @@ class MainService : Service(), MainRepositoryListener {
             mainRepository.initWebrtcClient(username!!)
 
         }
+    }
+
+    private fun handleSetupViews( incomingIntent: Intent) {
+        val isCaller = incomingIntent.getBooleanExtra("isCaller", false)
+        val isVideoCall = incomingIntent.getBooleanExtra("isVideoCall", true)
+        val target = incomingIntent.getStringExtra("target")
+
+        mainRepository.setTarget(target!!)
+        //initialize our widgets and start  streaming our video and audio source
+        //and get prepared for call
+        mainRepository.initLocalSurfaceView(localSurfaceView!!, isVideoCall)
+        mainRepository.initRemoteSurfaceView(remoteSurfaceView!!)
+
+        if(!isCaller) {
+            //start the video call
+            mainRepository.startCall()
+        }
+    }
+
+    private fun handleEndCall() {
+        //1. we have to end a signal to other peer that call is ended
+        mainRepository.sendEndCall()
+        //2. end out call process and restart our webrtc client
+
+        endCallAndRestartRepository()
+    }
+
+    private fun endCallAndRestartRepository() {
+        mainRepository.endCall()
+        endCallListener?.onCallEnded()
+        mainRepository.initWebrtcClient(username!!)
     }
 
     private fun startServiceWithNotification() {
@@ -122,6 +138,7 @@ class MainService : Service(), MainRepositoryListener {
     }
 
     override fun endCall() {
-        TODO("Not yet implemented")
+        //we are receiving end call signal from remote peer
+        endCallAndRestartRepository()
     }
 }

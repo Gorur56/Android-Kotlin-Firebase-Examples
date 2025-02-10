@@ -8,13 +8,14 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import com.example.androidvideocallwithwebrtcandfirebasebackup.R
 import com.example.androidvideocallwithwebrtcandfirebasebackup.databinding.ActivityCallBinding
+import com.example.androidvideocallwithwebrtcandfirebasebackup.service.EndCallListener
 import com.example.androidvideocallwithwebrtcandfirebasebackup.service.MainService
 import com.example.androidvideocallwithwebrtcandfirebasebackup.service.MainServiceRepository
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CallActivity : AppCompatActivity() {
+class CallActivity : AppCompatActivity(), EndCallListener {
 
     private var target: String ?= null
     private var isVideoCall: Boolean = true
@@ -50,6 +51,24 @@ class CallActivity : AppCompatActivity() {
             MainService.remoteSurfaceView = remoteView
             MainService.localSurfaceView = localView
             serviceRepository.setupViews(isVideoCall, isCaller, target!!)
+
+            endCallButton.setOnClickListener {
+                serviceRepository.sendEndCall()
+            }
         }
+        MainService.endCallListener = this
+    }
+
+    override fun onCallEnded() {
+        finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        MainService.remoteSurfaceView?.release()
+        MainService.remoteSurfaceView = null
+
+        MainService.localSurfaceView?.release()
+        MainService.localSurfaceView = null
     }
 }

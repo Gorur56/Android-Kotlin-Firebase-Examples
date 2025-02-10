@@ -94,33 +94,33 @@ class MainRepository @Inject constructor(
         this.target = target
     }
 
-    fun initWebrtcClient( username: String ) {
+    fun initWebrtcClient(username: String) {
         webRTCClient.listener = this
         webRTCClient.initializeWebrtcClient(username, object : MyPeerObserver() {
-            override fun onAddStream(mS: MediaStream?) {
-                super.onAddStream(mS)
-                //notify the creator of this class that there is a new stream available
+
+            override fun onAddStream(p0: MediaStream?) {
+                super.onAddStream(p0)
                 try {
-                    mS?.videoTracks?.get(0)?.addSink(remoteView)
-                } catch ( e: Exception) {
+                    p0?.videoTracks?.get(0)?.addSink(remoteView)
+                }catch (e:Exception){
                     e.printStackTrace()
                 }
+
             }
 
-            override fun onIceCandidate(iC: IceCandidate?) {
-                super.onIceCandidate(iC)
-                iC?.let {
+            override fun onIceCandidate(p0: IceCandidate?) {
+                super.onIceCandidate(p0)
+                p0?.let {
                     webRTCClient.sendIceCandidate(target!!, it)
                 }
             }
 
             override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
                 super.onConnectionChange(newState)
-                if( newState == PeerConnection.PeerConnectionState.CONNECTED) {
-                    //1. change my status to in call
-                    changeMyStatus( UserStatus.IN_CALL)
-
-                    //2. clear latest event inside my user section in firebase database
+                if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
+                    // 1. change my status to in call
+                    changeMyStatus(UserStatus.IN_CALL)
+                    // 2. clear latest event inside my user section in firebase database
                     firebaseClient.clearLatestEvent()
                 }
             }
