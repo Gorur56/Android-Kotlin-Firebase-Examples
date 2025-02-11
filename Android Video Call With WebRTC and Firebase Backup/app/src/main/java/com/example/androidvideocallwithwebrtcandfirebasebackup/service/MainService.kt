@@ -50,6 +50,7 @@ class MainService : Service(), MainRepositoryListener {
                 START_SERVICE.name -> handleStartService(incomingIntent)
                 SETUP_VIEWS.name -> handleSetupViews(incomingIntent)
                 END_CALL.name -> handleEndCall()
+                SWITCH_CAMERA.name ->  handleSwitchCamera()
                 else -> Unit
             }
         }
@@ -70,6 +71,21 @@ class MainService : Service(), MainRepositoryListener {
             mainRepository.initWebrtcClient(username!!)
 
         }
+    }
+    private fun startServiceWithNotification() {
+        if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
+                "channel1", "foreground", NotificationManager.IMPORTANCE_HIGH
+            )
+            notificationManager.createNotificationChannel(notificationChannel)
+
+            val notification = NotificationCompat.Builder(
+                this, "channel1"
+            ).setSmallIcon(R.mipmap.ic_launcher)
+
+            startForeground(1, notification.build())
+        }
+
     }
 
     private fun handleSetupViews( incomingIntent: Intent) {
@@ -103,20 +119,8 @@ class MainService : Service(), MainRepositoryListener {
         mainRepository.initWebrtcClient(username!!)
     }
 
-    private fun startServiceWithNotification() {
-        if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationChannel = NotificationChannel(
-                "channel1", "foreground", NotificationManager.IMPORTANCE_HIGH
-            )
-            notificationManager.createNotificationChannel(notificationChannel)
-
-            val notification = NotificationCompat.Builder(
-                this, "channel1"
-            ).setSmallIcon(R.mipmap.ic_launcher)
-
-            startForeground(1, notification.build())
-        }
-
+    private fun handleSwitchCamera() {
+        mainRepository.switchCamera()
     }
 
     override fun onBind(intent: Intent?): IBinder? {
