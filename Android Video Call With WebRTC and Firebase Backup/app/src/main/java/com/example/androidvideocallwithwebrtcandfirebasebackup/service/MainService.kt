@@ -50,7 +50,9 @@ class MainService : Service(), MainRepositoryListener {
                 START_SERVICE.name -> handleStartService(incomingIntent)
                 SETUP_VIEWS.name -> handleSetupViews(incomingIntent)
                 END_CALL.name -> handleEndCall()
-                SWITCH_CAMERA.name ->  handleSwitchCamera()
+                SWITCH_CAMERA.name -> handleSwitchCamera()
+                TOGGLE_AUDIO.name -> handleToggleAudio(incomingIntent)
+                TOGGLE_VIDEO.name -> handleToggleVideo(incomingIntent)
                 else -> Unit
             }
         }
@@ -121,6 +123,16 @@ class MainService : Service(), MainRepositoryListener {
 
     private fun handleSwitchCamera() {
         mainRepository.switchCamera()
+    }
+
+    private fun handleToggleAudio(incomingIntent: Intent) {
+        val shouldBeMuted = incomingIntent.getBooleanExtra("shouldBeMuted",true)
+        mainRepository.toggleAudio(shouldBeMuted)
+    }
+
+    private fun handleToggleVideo(incomingIntent: Intent) {
+        val shouldBeMuted = incomingIntent.getBooleanExtra("shouldBeMuted",true)
+        mainRepository.toggleVideo(shouldBeMuted)
     }
 
     override fun onBind(intent: Intent?): IBinder? {

@@ -158,12 +158,12 @@ class MainRepository @Inject constructor(
         firebaseClient.changeMyStatus( status )
     }
 
-    fun toggleAudio( shouldBeMuted: Boolean ) {
-        webRTCClient.toggleAudio( shouldBeMuted)
+    fun toggleAudio(shouldBeMuted: Boolean) {
+        webRTCClient.toggleAudio(shouldBeMuted)
     }
 
-    fun toggleVideo( shouldBeMuted: Boolean ) {
-        webRTCClient.switchCamera()
+    fun toggleVideo(shouldBeMuted: Boolean) {
+        webRTCClient.toggleVideo(shouldBeMuted)
     }
 
     fun switchCamera() {

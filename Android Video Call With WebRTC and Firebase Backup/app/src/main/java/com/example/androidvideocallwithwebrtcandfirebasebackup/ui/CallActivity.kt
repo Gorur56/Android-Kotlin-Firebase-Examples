@@ -21,6 +21,9 @@ class CallActivity : AppCompatActivity(), EndCallListener {
     private var isVideoCall: Boolean = true
     private var isCaller: Boolean = true
 
+    private var isMicrophoneMuted = false
+    private var isCameraMuted = false
+
     @Inject lateinit var serviceRepository: MainServiceRepository
 
     private lateinit var views: ActivityCallBinding
@@ -60,7 +63,47 @@ class CallActivity : AppCompatActivity(), EndCallListener {
                 serviceRepository.switchCamera()
             }
         }
+        setupMicToggleClicked()
+        setupCameraToggleClicked()
+
         MainService.endCallListener = this
+    }
+
+    private fun setupMicToggleClicked(){
+        views.apply {
+            toggleMicrophoneButton.setOnClickListener {
+                if (!isMicrophoneMuted){
+                    //we should mute our mic
+                    //1. send a command to repository
+                    serviceRepository.toggleAudio(true)
+                    //2. update ui to mic is muted
+                    toggleMicrophoneButton.setImageResource(R.drawable.ic_mic_on)
+                }else{
+                    //we should set it back to normal
+                    //1. send a command to repository to make it back to normal status
+                    serviceRepository.toggleAudio(false)
+                    //2. update ui
+                    toggleMicrophoneButton.setImageResource(R.drawable.ic_mic_off)
+                }
+                isMicrophoneMuted = !isMicrophoneMuted
+            }
+        }
+    }
+
+    private fun setupCameraToggleClicked(){
+        views.apply {
+            toggleCameraButton.setOnClickListener {
+                if (!isCameraMuted){
+                    serviceRepository.toggleVideo(true)
+                    toggleCameraButton.setImageResource(R.drawable.ic_camera_on)
+                }else{
+                    serviceRepository.toggleVideo(false)
+                    toggleCameraButton.setImageResource(R.drawable.ic_camera_off)
+                }
+
+                isCameraMuted = !isCameraMuted
+            }
+        }
     }
 
     override fun onCallEnded() {
