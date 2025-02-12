@@ -11,6 +11,7 @@ import com.example.androidvideocallwithwebrtcandfirebasebackup.databinding.Activ
 import com.example.androidvideocallwithwebrtcandfirebasebackup.service.EndCallListener
 import com.example.androidvideocallwithwebrtcandfirebasebackup.service.MainService
 import com.example.androidvideocallwithwebrtcandfirebasebackup.service.MainServiceRepository
+import com.example.androidvideocallwithwebrtcandfirebasebackup.webrtc.RTCAudioManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -23,6 +24,7 @@ class CallActivity : AppCompatActivity(), EndCallListener {
 
     private var isMicrophoneMuted = false
     private var isCameraMuted = false
+    private var isSpeakerMode = true
 
     @Inject lateinit var serviceRepository: MainServiceRepository
 
@@ -65,6 +67,7 @@ class CallActivity : AppCompatActivity(), EndCallListener {
         }
         setupMicToggleClicked()
         setupCameraToggleClicked()
+        setupToggleAudioDevice()
 
         MainService.endCallListener = this
     }
@@ -89,6 +92,25 @@ class CallActivity : AppCompatActivity(), EndCallListener {
             }
         }
     }
+
+    private fun setupToggleAudioDevice() {
+        views.apply {
+            toggleAudioDevice.setOnClickListener {
+                if( isSpeakerMode) {
+                    // we should set it to earpiece mode
+                    toggleAudioDevice.setImageResource(R.drawable.ic_speaker)
+                    // we should send a command to our  service to switch between devices
+                    serviceRepository.toggleAudioDevice(RTCAudioManager.AudioDevice.EARPIECE.name)
+                } else {
+                    // we should set it to speaker mode
+                    toggleAudioDevice.setImageResource(R.drawable.ic_ear)
+                    serviceRepository.toggleAudioDevice(RTCAudioManager.AudioDevice.SPEAKER_PHONE.name)
+                }
+                isSpeakerMode = !isSpeakerMode
+            }
+        }
+    }
+
 
     private fun setupCameraToggleClicked(){
         views.apply {

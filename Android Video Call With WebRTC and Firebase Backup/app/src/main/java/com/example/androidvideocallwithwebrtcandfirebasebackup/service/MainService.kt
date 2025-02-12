@@ -16,6 +16,7 @@ import com.example.androidvideocallwithwebrtcandfirebasebackup.repository.MainRe
 import com.example.androidvideocallwithwebrtcandfirebasebackup.repository.MainRepositoryListener
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.androidvideocallwithwebrtcandfirebasebackup.service.MainServiceActions.*
+import com.example.androidvideocallwithwebrtcandfirebasebackup.webrtc.RTCAudioManager
 import org.webrtc.SurfaceViewRenderer
 import javax.inject.Inject
 
@@ -29,6 +30,7 @@ class MainService : Service(), MainRepositoryListener {
     @Inject lateinit var mainRepository: MainRepository
 
     private lateinit var notificationManager: NotificationManager
+    private lateinit var rtcAudioManager: RTCAudioManager
 
     companion object {
         var listener: MainServiceListener ?= null
@@ -39,6 +41,9 @@ class MainService : Service(), MainRepositoryListener {
 
     override fun onCreate() {
         super.onCreate()
+        rtcAudioManager = RTCAudioManager.create(this)
+        rtcAudioManager.setDefaultAudioDevice(RTCAudioManager.AudioDevice.SPEAKER_PHONE)
+
         notificationManager = getSystemService(
             NotificationManager::class.java
         )
@@ -53,6 +58,7 @@ class MainService : Service(), MainRepositoryListener {
                 SWITCH_CAMERA.name -> handleSwitchCamera()
                 TOGGLE_AUDIO.name -> handleToggleAudio(incomingIntent)
                 TOGGLE_VIDEO.name -> handleToggleVideo(incomingIntent)
+                TOGGLE_AUDIO_DEVICE.name -> handleToggleAudioDevice(incomingIntent)
                 else -> Unit
             }
         }
@@ -151,6 +157,22 @@ class MainService : Service(), MainRepositoryListener {
                 else -> Unit
             }
         }
+    }
+
+    private fun handleToggleAudioDevice(incomingIntent: Intent) {
+        val type = when(incomingIntent.getStringExtra("type")){
+            RTCAudioManager.AudioDevice.EARPIECE.name -> RTCAudioManager.AudioDevice.EARPIECE
+            RTCAudioManager.AudioDevice.SPEAKER_PHONE.name -> RTCAudioManager.AudioDevice.SPEAKER_PHONE
+            else -> null
+        }
+
+        type?.let {
+            rtcAudioManager.setDefaultAudioDevice(it)
+            rtcAudioManager.selectAudioDevice(it)
+            Log.d(TAG, "handleToggleAudioDevice: $it")
+        }
+
+
     }
 
     override fun endCall() {
