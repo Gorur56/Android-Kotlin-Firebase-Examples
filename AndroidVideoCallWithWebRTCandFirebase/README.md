@@ -1,8 +1,11 @@
 # KOTLIN - Android Video Call With WebRTC and Firebase
 
 TECHNOLOGY SKILLS : 
+
 • Programming Languages: Kotlin
+
 • Mobile Technologies: WebRTC, Data Binding, MVVM, Hilt
+
 • Backend Technologies: Firebase
 
 # LOGIN SCREEN
