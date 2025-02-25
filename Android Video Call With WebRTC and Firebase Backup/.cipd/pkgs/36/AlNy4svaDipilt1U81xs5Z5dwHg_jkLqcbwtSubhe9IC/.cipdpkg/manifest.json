@@ -1,0 +1,13 @@
+{
+  "format_version": "1.1",
+  "package_name": "chromium/third_party/android_deps/libs/com_google_android_libraries_identity_googleid_googleid",
+  "install_mode": "copy",
+  "actual_install_mode": "copy",
+  "files": [
+    {
+      "name": "googleid-1.1.1.aar",
+      "size": 91755,
+      "hash": "Apn8DlIYtcdmI--MvrufvRZNA-1LSHtBjemjTyvpjbkC"
+    }
+  ]
+}

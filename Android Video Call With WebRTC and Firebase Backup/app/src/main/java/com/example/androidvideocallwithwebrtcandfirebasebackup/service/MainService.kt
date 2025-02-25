@@ -2,6 +2,7 @@ package com.example.androidvideocallwithwebrtcandfirebasebackup.service
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Build
@@ -9,41 +10,44 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.androidvideocallwithwebrtcandfirebasebackup.R
+import com.example.androidvideocallwithwebrtcandfirebasebackup.repository.MainRepository
 import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModel
 import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModelType
 import com.example.androidvideocallwithwebrtcandfirebasebackup.data.isValid
-import com.example.androidvideocallwithwebrtcandfirebasebackup.repository.MainRepository
+import com.example.androidvideocallwithwebrtcandfirebasebackup.webrtc.RTCAudioManager
 import com.example.androidvideocallwithwebrtcandfirebasebackup.repository.MainRepositoryListener
 import dagger.hilt.android.AndroidEntryPoint
-import com.example.androidvideocallwithwebrtcandfirebasebackup.service.MainServiceActions.*
-import com.example.androidvideocallwithwebrtcandfirebasebackup.webrtc.RTCAudioManager
 import org.webrtc.SurfaceViewRenderer
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainService : Service(), MainRepositoryListener {
+
     private val TAG = "MainService"
 
     private var isServiceRunning = false
-    private var username: String ?= null
+    private var username: String? = null
 
-    @Inject lateinit var mainRepository: MainRepository
+    @Inject
+    lateinit var mainRepository: MainRepository
 
     private lateinit var notificationManager: NotificationManager
     private lateinit var rtcAudioManager: RTCAudioManager
+    private var isPreviousCallStateVideo = true
+
 
     companion object {
-        var listener: MainServiceListener ?= null
-        var endCallListener: EndCallListener ?= null
-        var localSurfaceView: SurfaceViewRenderer ?= null
-        var remoteSurfaceView: SurfaceViewRenderer ?= null
+        var listener: MainServiceListener? = null
+        var endCallListener:EndCallListener?=null
+        var localSurfaceView: SurfaceViewRenderer?=null
+        var remoteSurfaceView: SurfaceViewRenderer?=null
+        var screenPermissionIntent : Intent?=null
     }
 
     override fun onCreate() {
         super.onCreate()
         rtcAudioManager = RTCAudioManager.create(this)
         rtcAudioManager.setDefaultAudioDevice(RTCAudioManager.AudioDevice.SPEAKER_PHONE)
-
         notificationManager = getSystemService(
             NotificationManager::class.java
         )
@@ -51,14 +55,16 @@ class MainService : Service(), MainRepositoryListener {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let { incomingIntent ->
-            when(incomingIntent.action) {
-                START_SERVICE.name -> handleStartService(incomingIntent)
-                SETUP_VIEWS.name -> handleSetupViews(incomingIntent)
-                END_CALL.name -> handleEndCall()
-                SWITCH_CAMERA.name -> handleSwitchCamera()
-                TOGGLE_AUDIO.name -> handleToggleAudio(incomingIntent)
-                TOGGLE_VIDEO.name -> handleToggleVideo(incomingIntent)
-                TOGGLE_AUDIO_DEVICE.name -> handleToggleAudioDevice(incomingIntent)
+            when (incomingIntent.action) {
+                MainServiceActions.START_SERVICE.name -> handleStartService(incomingIntent)
+                MainServiceActions.SETUP_VIEWS.name -> handleSetupViews(incomingIntent)
+                MainServiceActions.END_CALL.name -> handleEndCall()
+                MainServiceActions.SWITCH_CAMERA.name -> handleSwitchCamera()
+                MainServiceActions.TOGGLE_AUDIO.name -> handleToggleAudio(incomingIntent)
+                MainServiceActions.TOGGLE_VIDEO.name -> handleToggleVideo(incomingIntent)
+                MainServiceActions.TOGGLE_AUDIO_DEVICE.name -> handleToggleAudioDevice(incomingIntent)
+                MainServiceActions.TOGGLE_SCREEN_SHARE.name -> handleToggleScreenShare(incomingIntent)
+                MainServiceActions.STOP_SERVICE.name -> handleStopService()
                 else -> Unit
             }
         }
@@ -66,95 +72,30 @@ class MainService : Service(), MainRepositoryListener {
         return START_STICKY
     }
 
-    private fun handleStartService(incomingIntent: Intent) {
-        //start our foreground service
-        if (!isServiceRunning) {
-            isServiceRunning = true
-            username = incomingIntent.getStringExtra("username")
-            startServiceWithNotification()
-
-            //setup my clients
-            mainRepository.listener = this
-            mainRepository.initFirebase()
-            mainRepository.initWebrtcClient(username!!)
-
-        }
-    }
-    private fun startServiceWithNotification() {
-        if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationChannel = NotificationChannel(
-                "channel1", "foreground", NotificationManager.IMPORTANCE_HIGH
-            )
-            notificationManager.createNotificationChannel(notificationChannel)
-
-            val notification = NotificationCompat.Builder(
-                this, "channel1"
-            ).setSmallIcon(R.mipmap.ic_launcher)
-
-            startForeground(1, notification.build())
-        }
-
-    }
-
-    private fun handleSetupViews( incomingIntent: Intent) {
-        val isCaller = incomingIntent.getBooleanExtra("isCaller", false)
-        val isVideoCall = incomingIntent.getBooleanExtra("isVideoCall", true)
-        val target = incomingIntent.getStringExtra("target")
-
-        mainRepository.setTarget(target!!)
-        //initialize our widgets and start  streaming our video and audio source
-        //and get prepared for call
-        mainRepository.initLocalSurfaceView(localSurfaceView!!, isVideoCall)
-        mainRepository.initRemoteSurfaceView(remoteSurfaceView!!)
-
-        if(!isCaller) {
-            //start the video call
-            mainRepository.startCall()
-        }
-    }
-
-    private fun handleEndCall() {
-        //1. we have to end a signal to other peer that call is ended
-        mainRepository.sendEndCall()
-        //2. end out call process and restart our webrtc client
-
-        endCallAndRestartRepository()
-    }
-
-    private fun endCallAndRestartRepository() {
+    private fun handleStopService() {
         mainRepository.endCall()
-        endCallListener?.onCallEnded()
-        mainRepository.initWebrtcClient(username!!)
+        mainRepository.logOff {
+            isServiceRunning = false
+            stopSelf()
+        }
     }
 
-    private fun handleSwitchCamera() {
-        mainRepository.switchCamera()
-    }
+    private fun handleToggleScreenShare(incomingIntent: Intent) {
+        val isStarting = incomingIntent.getBooleanExtra("isStarting",true)
+        if (isStarting){
+            // we should start screen share
+            //but we have to keep it in mind that we first should remove the camera streaming first
+            if (isPreviousCallStateVideo){
+                mainRepository.toggleVideo(true)
+            }
+            mainRepository.setScreenCaptureIntent(screenPermissionIntent!!)
+            mainRepository.toggleScreenShare(true)
 
-    private fun handleToggleAudio(incomingIntent: Intent) {
-        val shouldBeMuted = incomingIntent.getBooleanExtra("shouldBeMuted",true)
-        mainRepository.toggleAudio(shouldBeMuted)
-    }
-
-    private fun handleToggleVideo(incomingIntent: Intent) {
-        val shouldBeMuted = incomingIntent.getBooleanExtra("shouldBeMuted",true)
-        mainRepository.toggleVideo(shouldBeMuted)
-    }
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
-
-    override fun onLatestEventReceived(data: DataModel) {
-        Log.d(TAG, "onLatestEventReceived: $data")
-
-        if( data.isValid()) {
-            when(data.type) {
-                DataModelType.StartVideoCall,
-                DataModelType.StartAudioCall -> {
-                    listener?.onCallReceived(data)
-                }
-                else -> Unit
+        }else{
+            //we should stop screen share and check if camera streaming was on so we should make it on back again
+            mainRepository.toggleScreenShare(false)
+            if (isPreviousCallStateVideo){
+                mainRepository.toggleVideo(false)
             }
         }
     }
@@ -175,8 +116,124 @@ class MainService : Service(), MainRepositoryListener {
 
     }
 
+    private fun handleToggleVideo(incomingIntent: Intent) {
+        val shouldBeMuted = incomingIntent.getBooleanExtra("shouldBeMuted",true)
+        this.isPreviousCallStateVideo = !shouldBeMuted
+        mainRepository.toggleVideo(shouldBeMuted)
+    }
+
+    private fun handleToggleAudio(incomingIntent: Intent) {
+        val shouldBeMuted = incomingIntent.getBooleanExtra("shouldBeMuted",true)
+        mainRepository.toggleAudio(shouldBeMuted)
+    }
+
+    private fun handleSwitchCamera() {
+        mainRepository.switchCamera()
+    }
+
+    private fun handleEndCall() {
+        //1. we have to send a signal to other peer that call is ended
+        mainRepository.sendEndCall()
+        //2.end out call process and restart our webrtc client
+        endCallAndRestartRepository()
+    }
+
+    private fun endCallAndRestartRepository(){
+        mainRepository.endCall()
+        endCallListener?.onCallEnded()
+        mainRepository.initWebrtcClient(username!!)
+    }
+
+    private fun handleSetupViews(incomingIntent: Intent) {
+        val isCaller = incomingIntent.getBooleanExtra("isCaller",false)
+        val isVideoCall = incomingIntent.getBooleanExtra("isVideoCall",true)
+        val target = incomingIntent.getStringExtra("target")
+        this.isPreviousCallStateVideo = isVideoCall
+
+        target?.let {
+            mainRepository.setTarget(it)
+        } ?: run {
+            Log.e(TAG, "Target null")
+        }
+
+        //initialize our widgets and start streaming our video and audio source
+        //and get prepared for call
+        localSurfaceView?.let {
+            mainRepository.initLocalSurfaceView(it, isVideoCall)
+        } ?: run {
+            Log.e(TAG, "Local SurfaceView null")
+        }
+
+        remoteSurfaceView?.let {
+            mainRepository.initRemoteSurfaceView(it)
+        } ?: run {
+            Log.e(TAG, "Remote SurfaceView null")
+        }
+
+        if (!isCaller){
+            //start the video call
+            mainRepository.startCall()
+        }
+
+    }
+
+    private fun handleStartService(incomingIntent: Intent) {
+        //start our foreground service
+        if (!isServiceRunning) {
+            isServiceRunning = true
+            username = incomingIntent.getStringExtra("username")
+            startServiceWithNotification()
+
+            //setup my clients
+            mainRepository.listener = this
+            mainRepository.initFirebase()
+            mainRepository.initWebrtcClient(username!!)
+
+        }
+    }
+
+    private fun startServiceWithNotification() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
+                "channel1", "foreground", NotificationManager.IMPORTANCE_HIGH
+            )
+
+            val intent = Intent(this,MainServiceReceiver::class.java).apply {
+                action = "ACTION_EXIT"
+            }
+            val pendingIntent : PendingIntent =
+                PendingIntent.getBroadcast(this,0 ,intent, PendingIntent.FLAG_IMMUTABLE)
+
+            notificationManager.createNotificationChannel(notificationChannel)
+            val notification = NotificationCompat.Builder(
+                this, "channel1"
+            ).setSmallIcon(R.mipmap.ic_launcher)
+                .addAction(R.drawable.ic_end_call,"Exit",pendingIntent)
+
+            startForeground(1, notification.build())
+        }
+    }
+
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+
+    override fun onLatestEventReceived(data: DataModel) {
+        if (data.isValid()) {
+            when (data.type) {
+                DataModelType.StartVideoCall,
+                DataModelType.StartAudioCall -> {
+                    listener?.onCallReceived(data)
+                }
+                else -> Unit
+            }
+        }
+    }
+
     override fun endCall() {
         //we are receiving end call signal from remote peer
         endCallAndRestartRepository()
     }
+
 }

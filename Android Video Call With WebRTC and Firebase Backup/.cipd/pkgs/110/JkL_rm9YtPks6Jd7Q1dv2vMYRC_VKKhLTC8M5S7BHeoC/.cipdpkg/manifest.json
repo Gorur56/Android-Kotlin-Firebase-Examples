@@ -1,0 +1,13 @@
+{
+  "format_version": "1.1",
+  "package_name": "chromium/third_party/android_deps/libs/org_robolectric_shadowapi",
+  "install_mode": "copy",
+  "actual_install_mode": "copy",
+  "files": [
+    {
+      "name": "shadowapi-4.14.1.jar",
+      "size": 15882,
+      "hash": "_RWIY87kiEdSBrodI_9MfSm-QS7M0hsS2UFrADCqWC0C"
+    }
+  ]
+}

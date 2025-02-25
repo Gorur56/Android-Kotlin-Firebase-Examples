@@ -1,0 +1,13 @@
+{
+  "format_version": "1.1",
+  "package_name": "chromium/third_party/android_deps/libs/com_google_android_material_material",
+  "install_mode": "copy",
+  "actual_install_mode": "copy",
+  "files": [
+    {
+      "name": "material-1.13.0-alpha05.aar",
+      "size": 2360603,
+      "hash": "Dzjxy0Ydcs82W346BNw00V-aJMT-q3Chsbk5RCRkKkIC"
+    }
+  ]
+}

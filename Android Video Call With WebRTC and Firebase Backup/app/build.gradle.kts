@@ -41,6 +41,7 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
 }
 
 buildscript {
@@ -64,14 +65,22 @@ dependencies {
 
     // Hilt Bağımlılıkları
     implementation("com.google.dagger:hilt-android:2.51")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.0")
     kapt("com.google.dagger:hilt-compiler:2.51")
     kapt("androidx.hilt:hilt-compiler:1.2.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Diğer Bağımlılıklar
+    implementation("com.android.tools:desugar_jdk_libs:1.1.5")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.guolindev.permissionx:permissionx:1.7.1")
+
+    //implementation("io.antmedia:webrtc-android-framework:2.8.0-SNAPSHOT")
+
+    //implementation("org.webrtc:google-webrtc:1.0.24064")
     implementation("com.mesibo.api:webrtc:1.0.5")
+    //implementation("io.antmedia:webrtc-android-framework:2.8.0-SNAPSHOT")
+    //implementation("com.dafruits:webrtc:123.0.0")
 }
 
 kapt {

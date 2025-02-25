@@ -1,0 +1,13 @@
+{
+  "format_version": "1.1",
+  "package_name": "chromium/third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_serialization_core_jvm",
+  "install_mode": "copy",
+  "actual_install_mode": "copy",
+  "files": [
+    {
+      "name": "kotlinx-serialization-core-jvm-1.7.2.jar",
+      "size": 390343,
+      "hash": "EyIvQBrlzYd5TeCFE4wV0YsxFfoIqnV3pom0u0i8wmMC"
+    }
+  ]
+}

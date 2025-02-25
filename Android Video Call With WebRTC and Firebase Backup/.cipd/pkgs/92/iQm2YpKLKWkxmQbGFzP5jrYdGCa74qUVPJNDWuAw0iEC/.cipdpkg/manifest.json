@@ -1,0 +1,13 @@
+{
+  "format_version": "1.1",
+  "package_name": "chromium/third_party/android_deps/libs/org_jspecify_jspecify",
+  "install_mode": "copy",
+  "actual_install_mode": "copy",
+  "files": [
+    {
+      "name": "jspecify-1.0.0.jar",
+      "size": 3819,
+      "hash": "H61ua-dVd4Hk0zcp1Jrhzcj92m_kd7sMxozjUer9-6sC"
+    }
+  ]
+}

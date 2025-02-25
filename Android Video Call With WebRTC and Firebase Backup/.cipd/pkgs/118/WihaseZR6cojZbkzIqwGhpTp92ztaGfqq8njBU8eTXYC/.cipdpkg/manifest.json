@@ -1,0 +1,88 @@
+{
+  "format_version": "1.1",
+  "package_name": "chromium/third_party/android_sdk/public/platform-tools",
+  "install_mode": "copy",
+  "actual_install_mode": "copy",
+  "files": [
+    {
+      "name": "platform-tools/NOTICE.txt",
+      "size": 1128669,
+      "hash": "ZPQQww4HYFmoQIHSg_EdEqi6NUDj0J2Kaqi15KeZmYkC"
+    },
+    {
+      "name": "platform-tools/adb",
+      "size": 7822088,
+      "executable": true,
+      "hash": "GbqlO-TqY2WyE0HfO-yrkEa6JWknV_yTTiyV8OgHiIMC"
+    },
+    {
+      "name": "platform-tools/dmtracedump",
+      "size": 57216,
+      "executable": true,
+      "hash": "klhfwQ7BZPt1cMF5_Ng24f4axk4F3ffRXRWceLtlDooC"
+    },
+    {
+      "name": "platform-tools/etc1tool",
+      "size": 303608,
+      "executable": true,
+      "hash": "ByPX0XxqLCEOW0mhgpJ7Xv3xiZRrPzLWhSvBPKZP0EUC"
+    },
+    {
+      "name": "platform-tools/fastboot",
+      "size": 2480432,
+      "executable": true,
+      "hash": "gdyqVUta1rg1S7esFoJngrEboPqttWAbJCzXwHgK5ZEC"
+    },
+    {
+      "name": "platform-tools/hprof-conv",
+      "size": 13312,
+      "executable": true,
+      "hash": "nXvJPcVK89DFRclTWheZg5XFk58EDTVVJyV7NdMPB4wC"
+    },
+    {
+      "name": "platform-tools/lib64/libc++.so",
+      "size": 1068432,
+      "executable": true,
+      "hash": "RmFVpr6WdIWSaHx6z6X0e6tXLIQp51K752vfXj83Dh8C"
+    },
+    {
+      "name": "platform-tools/make_f2fs",
+      "size": 264016,
+      "executable": true,
+      "hash": "MuEZjW_8WAYNL6tm5aPskwpuuvBIgIa0YNXMOoxMzusC"
+    },
+    {
+      "name": "platform-tools/make_f2fs_casefold",
+      "size": 264000,
+      "executable": true,
+      "hash": "eCmNS-dXcCC1wdg3igPwdk6LsSDjJJJNcu74G7lj1c0C"
+    },
+    {
+      "name": "platform-tools/mke2fs",
+      "size": 874336,
+      "executable": true,
+      "hash": "Ey9ODn8AA0YPx2ZKQZQj9Cm0lTzg31TMtXbl4IaTe9QC"
+    },
+    {
+      "name": "platform-tools/mke2fs.conf",
+      "size": 1157,
+      "hash": "rViljc3STYUFWBTKnKxn24nU5nxDTpZ3S9zg0KAH0GcC"
+    },
+    {
+      "name": "platform-tools/package.xml",
+      "size": 18335,
+      "hash": "FHPpg8KWjU3sS8Y6mGzW1AtuQmmhdCXjOORNWP93ZzsC"
+    },
+    {
+      "name": "platform-tools/source.properties",
+      "size": 38,
+      "hash": "G7pSUj1jbSlMagE0Efn80iz97lT47RymhPpegg8EDu4C"
+    },
+    {
+      "name": "platform-tools/sqlite3",
+      "size": 3335144,
+      "executable": true,
+      "hash": "N7WRjhKX5DdhJqWLJxeaQh6CBwLrIKL_lV6Yv2K4lJwC"
+    }
+  ]
+}

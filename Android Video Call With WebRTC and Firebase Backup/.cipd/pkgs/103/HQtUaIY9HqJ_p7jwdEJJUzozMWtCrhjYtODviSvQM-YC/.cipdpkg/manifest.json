@@ -1,0 +1,13 @@
+{
+  "format_version": "1.1",
+  "package_name": "chromium/third_party/android_deps/libs/org_robolectric_annotations",
+  "install_mode": "copy",
+  "actual_install_mode": "copy",
+  "files": [
+    {
+      "name": "annotations-4.14.1.jar",
+      "size": 51131,
+      "hash": "Rjpa0ThsMQELya8Av-GaG3WNjC3t2MGeXHXSmriruboC"
+    }
+  ]
+}

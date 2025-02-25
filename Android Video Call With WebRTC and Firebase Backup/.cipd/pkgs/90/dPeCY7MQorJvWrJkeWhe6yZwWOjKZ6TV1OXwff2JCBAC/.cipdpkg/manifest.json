@@ -1,0 +1,13 @@
+{
+  "format_version": "1.1",
+  "package_name": "chromium/third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_test_jvm",
+  "install_mode": "copy",
+  "actual_install_mode": "copy",
+  "files": [
+    {
+      "name": "kotlinx-coroutines-test-jvm-1.7.3.jar",
+      "size": 159243,
+      "hash": "0ZdCpl29q8n_3Ln4ShXHduURoU2mAtVOpOB41vcieiYC"
+    }
+  ]
+}

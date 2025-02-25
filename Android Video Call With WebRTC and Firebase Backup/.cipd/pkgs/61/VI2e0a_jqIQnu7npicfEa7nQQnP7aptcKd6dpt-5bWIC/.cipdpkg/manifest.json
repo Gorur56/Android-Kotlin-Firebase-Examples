@@ -1,0 +1,13 @@
+{
+  "format_version": "1.1",
+  "package_name": "chromium/third_party/android_deps/libs/com_google_protobuf_protobuf_javalite",
+  "install_mode": "copy",
+  "actual_install_mode": "copy",
+  "files": [
+    {
+      "name": "protobuf-javalite-4.28.0.jar",
+      "size": 1055760,
+      "hash": "Sj-CebQUQmM-IGayRNSVU3XFIBaEvPHl9S0fnd1GiNoC"
+    }
+  ]
+}

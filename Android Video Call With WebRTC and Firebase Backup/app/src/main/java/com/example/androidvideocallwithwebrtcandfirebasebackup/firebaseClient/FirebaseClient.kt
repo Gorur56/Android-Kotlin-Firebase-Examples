@@ -16,49 +16,48 @@ import javax.inject.Singleton
 
 @Singleton
 class FirebaseClient @Inject constructor(
-    private val dbRef: DatabaseReference,
-    private val gson: Gson
-){
+    private val dbRef:DatabaseReference,
+    private val gson:Gson
+) {
 
-    private var currentUsername: String? = null
-
-    private fun setUsername(username: String) {
+    private var currentUsername:String?=null
+    private fun setUsername(username: String){
         this.currentUsername = username
     }
 
     fun login(username: String, password: String, done: (Boolean, String?) -> Unit) {
-        dbRef.addListenerForSingleValueEvent(object : MyEventListener() {
+        dbRef.addListenerForSingleValueEvent(object  : MyEventListener(){
             override fun onDataChange(snapshot: DataSnapshot) {
                 //if the current user exists
-                if( snapshot.hasChild(username)) {
-                    //user exists, its time to check the password
+                if (snapshot.hasChild(username)){
+                    //user exists , its time to check the password
                     val dbPassword = snapshot.child(username).child(PASSWORD).value
-                    if(password == dbPassword) {
-                        //Password is correct and sign in
+                    if (password == dbPassword) {
+                        //password is correct and sign in
                         dbRef.child(username).child(STATUS).setValue(UserStatus.ONLINE)
                             .addOnCompleteListener {
                                 setUsername(username)
-                                done(true, null)
-
+                                done(true,null)
                             }.addOnFailureListener {
-                                done(false, "${it.message}")
+                                done(false,"${it.message}")
                             }
-                    } else {
-                        //Password is wrong, notify user
-                        done(false, "Password is wrong")
+                    }else{
+                        //password is wrong, notify user
+                        done(false,"Password is wrong")
                     }
-                } else {
-                    // user does not exist, register the user
+
+                }else{
+                    //user doesnt exist, register the user
                     dbRef.child(username).child(PASSWORD).setValue(password).addOnCompleteListener {
                         dbRef.child(username).child(STATUS).setValue(UserStatus.ONLINE)
                             .addOnCompleteListener {
                                 setUsername(username)
-                                done(true, null)
+                                done(true,null)
                             }.addOnFailureListener {
-                                done(false, it.message)
+                                done(false,it.message)
                             }
                     }.addOnFailureListener {
-
+                        done(false,it.message)
                     }
 
                 }
@@ -74,11 +73,10 @@ class FirebaseClient @Inject constructor(
                 }
                 status(list)
             }
-
         })
     }
 
-    fun subscribeForLatestEvent(listener: FirebaseClientListener){
+    fun subscribeForLatestEvent(listener:FirebaseClientListener){
         try {
             dbRef.child(currentUsername!!).child(LATEST_EVENT).addValueEventListener(
                 object : MyEventListener() {
@@ -86,7 +84,7 @@ class FirebaseClient @Inject constructor(
                         super.onDataChange(snapshot)
                         val event = try {
                             gson.fromJson(snapshot.value.toString(), DataModel::class.java)
-                        } catch (e: Exception) {
+                        }catch (e:Exception){
                             e.printStackTrace()
                             null
                         }
@@ -96,7 +94,7 @@ class FirebaseClient @Inject constructor(
                     }
                 }
             )
-        } catch (e: Exception) {
+        }catch (e:Exception){
             e.printStackTrace()
         }
     }
@@ -117,6 +115,11 @@ class FirebaseClient @Inject constructor(
 
     fun clearLatestEvent() {
         dbRef.child(currentUsername!!).child(LATEST_EVENT).setValue(null)
+    }
+
+    fun logOff(function:()->Unit) {
+        dbRef.child(currentUsername!!).child(STATUS).setValue(UserStatus.OFFLINE)
+            .addOnCompleteListener { function() }
     }
 
 

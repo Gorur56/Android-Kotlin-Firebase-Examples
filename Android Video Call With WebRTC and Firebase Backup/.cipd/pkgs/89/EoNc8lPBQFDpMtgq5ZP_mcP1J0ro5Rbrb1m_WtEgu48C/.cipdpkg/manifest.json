@@ -1,0 +1,13 @@
+{
+  "format_version": "1.1",
+  "package_name": "chromium/third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",
+  "install_mode": "copy",
+  "actual_install_mode": "copy",
+  "files": [
+    {
+      "name": "kotlinx-coroutines-core-jvm-1.8.1.jar",
+      "size": 1546991,
+      "hash": "89T13hw5G7zCDzs0Ncy6wBNSHna2kC19WWNewVwfeX4C"
+    }
+  ]
+}

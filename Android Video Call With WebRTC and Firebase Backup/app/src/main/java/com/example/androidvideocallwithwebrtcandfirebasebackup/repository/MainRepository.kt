@@ -1,5 +1,6 @@
 package com.example.androidvideocallwithwebrtcandfirebasebackup.repository
 
+import android.content.Intent
 import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModel
 import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModelType
 import com.example.androidvideocallwithwebrtcandfirebasebackup.data.DataModelType.*
@@ -25,15 +26,15 @@ class MainRepository @Inject constructor(
     private val gson: Gson
 ) : WebRTCListener {
 
-    private var target:String ?= null
-    var listener: MainRepositoryListener ?= null
-    private var remoteView: SurfaceViewRenderer ?= null
+    private var target: String? = null
+    var listener: MainRepositoryListener? = null
+    private var remoteView: SurfaceViewRenderer?=null
 
-    fun login( username: String, password: String, isDone: (Boolean,String?) -> Unit) {
+    fun login(username: String, password: String, isDone: (Boolean, String?) -> Unit) {
         firebaseClient.login(username, password, isDone)
     }
 
-    fun observeUsersStatus( status: (List<Pair<String, String>>) -> Unit) {
+    fun observeUsersStatus(status: (List<Pair<String, String>>) -> Unit) {
         firebaseClient.observeUsersStatus(status)
     }
 
@@ -41,9 +42,8 @@ class MainRepository @Inject constructor(
         firebaseClient.subscribeForLatestEvent(object : FirebaseClientListener {
             override fun onLatestEventReceived(event: DataModel) {
                 listener?.onLatestEventReceived(event)
-
-                when(event.type){
-                    Offer -> {
+                when (event.type) {
+                    DataModelType.Offer ->{
                         webRTCClient.onRemoteSessionReceived(
                             SessionDescription(
                                 SessionDescription.Type.OFFER,
@@ -52,7 +52,7 @@ class MainRepository @Inject constructor(
                         )
                         webRTCClient.answer(target!!)
                     }
-                    Answer -> {
+                    DataModelType.Answer ->{
                         webRTCClient.onRemoteSessionReceived(
                             SessionDescription(
                                 SessionDescription.Type.ANSWER,
@@ -60,20 +60,19 @@ class MainRepository @Inject constructor(
                             )
                         )
                     }
-                    IceCandidates -> {
+                    DataModelType.IceCandidates ->{
                         val candidate: IceCandidate? = try {
-                            gson.fromJson(event.data.toString(), IceCandidate::class.java)
-                        } catch ( e: Exception) {
+                            gson.fromJson(event.data.toString(),IceCandidate::class.java)
+                        }catch (e:Exception){
                             null
                         }
-                        candidate?.let{
+                        candidate?.let {
                             webRTCClient.addIceCandidateToPeer(it)
                         }
                     }
-                    EndCall -> {
+                    DataModelType.EndCall ->{
                         listener?.endCall()
                     }
-
                     else -> Unit
                 }
             }
@@ -81,10 +80,10 @@ class MainRepository @Inject constructor(
         })
     }
 
-    fun sendConnectionRequest( target: String, isVideoCall: Boolean, success:(Boolean) -> Unit) {
+    fun sendConnectionRequest(target: String, isVideoCall: Boolean, success: (Boolean) -> Unit) {
         firebaseClient.sendMessageToOtherClient(
             DataModel(
-                type = if (isVideoCall) StartVideoCall else StartAudioCall,
+                type = if (isVideoCall) DataModelType.StartVideoCall else DataModelType.StartAudioCall,
                 target = target
             ), success
         )
@@ -127,12 +126,12 @@ class MainRepository @Inject constructor(
         })
     }
 
-    fun initLocalSurfaceView( view: SurfaceViewRenderer, isVideoCall: Boolean) {
+    fun initLocalSurfaceView(view: SurfaceViewRenderer, isVideoCall: Boolean) {
         webRTCClient.initLocalSurfaceView(view, isVideoCall)
     }
 
     fun initRemoteSurfaceView(view: SurfaceViewRenderer) {
-        webRTCClient.initRemoteSurface(view)
+        webRTCClient.initRemoteSurfaceView(view)
         this.remoteView = view
     }
 
@@ -148,14 +147,14 @@ class MainRepository @Inject constructor(
     fun sendEndCall() {
         onTransferEventSocket(
             DataModel(
-                type = EndCall,
+                type = DataModelType.EndCall,
                 target = target!!
             )
         )
     }
 
-    private fun changeMyStatus( status: UserStatus) {
-        firebaseClient.changeMyStatus( status )
+    private fun changeMyStatus(status: UserStatus) {
+        firebaseClient.changeMyStatus(status)
     }
 
     fun toggleAudio(shouldBeMuted: Boolean) {
@@ -173,4 +172,19 @@ class MainRepository @Inject constructor(
     override fun onTransferEventSocket(data: DataModel) {
         firebaseClient.sendMessageToOtherClient(data) {}
     }
+
+    fun setScreenCaptureIntent(screenPermissionIntent: Intent) {
+        webRTCClient.setPermissionIntent(screenPermissionIntent)
+    }
+
+    fun toggleScreenShare(isStarting: Boolean) {
+        if (isStarting){
+            webRTCClient.startScreenCapturing()
+        }else{
+            webRTCClient.stopScreenCapturing()
+        }
+    }
+
+    fun logOff(function: () -> Unit) = firebaseClient.logOff(function)
+
 }
